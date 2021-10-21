@@ -18,6 +18,7 @@ GlobalVariable property GameDaysPassed auto
 GlobalVariable property GameHour auto
 Message property DailySpellList_BeginMeditation auto
 Message property DailySpellList_EndMeditation auto
+Message property DailySpellList_NotEnoughPoints auto
 Perk property AlterationNovice00 auto
 Perk property AlterationApprentice25 auto
 Perk property AlterationAdept50 auto
@@ -65,6 +66,7 @@ function AddTestSpells()
     PlayerRef.AddSpell(Game.GetForm(0x45f9c) as Spell)
     PlayerRef.AddSpell(Game.GetForm(0x2dd29) as Spell)
     PlayerRef.AddSpell(Game.GetForm(0x2b96b) as Spell)
+    PlayerRef.AddSpell(Game.GetForm(0xb3165) as Spell)
 endFunction
 
 event OnInit()
@@ -251,6 +253,79 @@ string function GetSpellLevel(Spell theSpell)
     endIf
 endFunction
 
+Form[] function TryToPrepareSpellAndReturnNewArray(Spell theSpell, Form[] unpreparedSpellArray)
+    if HasEnoughPointsAvailableToPrepareSpell(theSpell)
+        PrepareSpell(theSpell)
+        return RemoveElement(unpreparedSpellArray, theSpell)
+    else
+        DailySpellList_NotEnoughPoints.Show()
+        return unpreparedSpellArray
+    endIf
+endFunction
+
+Form[] function RemoveElement(Form[] theArray, Form theForm)
+    Form[] newArray
+    if theArray.Length == 1
+        return newArray
+    endIf
+    newArray = Utility.CreateFormArray(theArray.Length - 1)
+    int existingArrayIndex = 0
+    int existingArrayIndexToSkip = theArray.Find(theForm)
+    int newArrayIndex = 0
+    while existingArrayIndex < theArray.Length
+        if existingArrayIndex != existingArrayIndexToSkip
+            newArray[newArrayIndex] = theArray[existingArrayIndex]
+            newArrayIndex += 1
+        endIf
+        existingArrayIndex += 1
+    endWhile
+    return newArray
+endFunction
+
+function PrepareSpell(Spell theSpell)
+    string level = GetSpellLevel(theSpell)
+    if level == "Novice"
+        PreparedSpells_Novice = Utility.ResizeFormArray(PreparedSpells_Novice, PreparedSpells_Novice.Length + 1)
+        PreparedSpells_Novice[PreparedSpells_Novice.Length - 1] = theSpell
+        SpellPointsUsed += DailySpellList_PointsRequired_Novice.Value as int
+    elseIf level == "Apprentice"
+        PreparedSpells_Apprentice = Utility.ResizeFormArray(PreparedSpells_Apprentice, PreparedSpells_Apprentice.Length + 1)
+        PreparedSpells_Apprentice[PreparedSpells_Apprentice.Length - 1] = theSpell
+        SpellPointsUsed += DailySpellList_PointsRequired_Apprentice.Value as int
+    elseIf level == "Adept"
+        PreparedSpells_Adept = Utility.ResizeFormArray(PreparedSpells_Adept, PreparedSpells_Adept.Length + 1)
+        PreparedSpells_Adept[PreparedSpells_Adept.Length - 1] = theSpell
+        SpellPointsUsed += DailySpellList_PointsRequired_Adept.Value as int
+    elseIf level == "Expert"
+        PreparedSpells_Expert = Utility.ResizeFormArray(PreparedSpells_Expert, PreparedSpells_Expert.Length + 1)
+        PreparedSpells_Expert[PreparedSpells_Expert.Length - 1] = theSpell
+        SpellPointsUsed += DailySpellList_PointsRequired_Expert.Value as int
+    elseIf level == "Master"
+        PreparedSpells_Master = Utility.ResizeFormArray(PreparedSpells_Master, PreparedSpells_Master.Length + 1)
+        PreparedSpells_Master[PreparedSpells_Master.Length - 1] = theSpell
+        SpellPointsUsed += DailySpellList_PointsRequired_Master.Value as int
+    endIf
+endFunction
+
+bool function HasEnoughPointsAvailableToPrepareSpell(Spell theSpell)
+    return GetCurrentRemainingSpellPoints() >= GetPointsRequiredForSpell(theSpell)
+endFunction
+
+int function GetPointsRequiredForSpell(Spell theSpell)
+    string level = GetSpellLevel(theSpell)
+    if level == "Novice"
+        return DailySpellList_PointsRequired_Novice.Value as int
+    elseIf level == "Apprentice"
+        return DailySpellList_PointsRequired_Apprentice.Value as int
+    elseIf level == "Adept"
+        return DailySpellList_PointsRequired_Adept.Value as int
+    elseIf level == "Expert"
+        return DailySpellList_PointsRequired_Expert.Value as int
+    elseIf level == "Master"
+        return DailySpellList_PointsRequired_Master.Value as int
+    endIf
+endFunction
+
 function ShowSpellSelectionList()
     UIListMenu list = UIExtensions.GetMenu("UIListMenu") as UIListMenu
 
@@ -281,57 +356,66 @@ function ShowSpellSelectionList()
             ShowSpellSelectionList()
         endIf
     else
-        int currentIndex = 2
+        int currentIndex = 2 ; The two header lines in the list of prepared
 
+        if selection < (currentIndex + PreparedSpells_Novice.Length)
+            Debug.MessageBox(PreparedSpells_Novice[selection - currentIndex].GetName())
+        endIf
         currentIndex += PreparedSpells_Novice.Length
-        if selection < currentIndex
-            Debug.MessageBox("Prepared Novice")
+
+        if selection < (currentIndex + PreparedSpells_Apprentice.Length)
+            Debug.MessageBox(PreparedSpells_Apprentice[selection - currentIndex].GetName())
         endIf
         currentIndex += PreparedSpells_Apprentice.Length
-        if selection < currentIndex
-            Debug.MessageBox("Prepared Apprentice")
+
+        if selection < (currentIndex + PreparedSpells_Adept.Length)
+            Debug.MessageBox(PreparedSpells_Adept[selection - currentIndex].GetName())
         endIf
         currentIndex += PreparedSpells_Adept.Length
-        if selection < currentIndex
-            Debug.MessageBox("Prepared Adept")
+
+        if selection < (currentIndex + PreparedSpells_Expert.Length)
+            Debug.MessageBox(PreparedSpells_Expert[selection - currentIndex].GetName())
         endIf
         currentIndex += PreparedSpells_Expert.Length
-        if selection < currentIndex
-            Debug.MessageBox("Prepared Expert")
+
+        if selection < (currentIndex + PreparedSpells_Master.Length)
+            Debug.MessageBox(PreparedSpells_Master[selection - currentIndex].GetName())
         endIf
         currentIndex += PreparedSpells_Master.Length
-        if selection < currentIndex
-            Debug.MessageBox("Prepared Master")
-        endIf
 
-        currentIndex += 2
+        currentIndex += 2 ; The header and empty space in the list for unprepared
 
         if selection < (currentIndex + UnpreparedSpells_Novice.Length)
-            Debug.MessageBox(UnpreparedSpells_Novice[selection - currentIndex].GetName())
+            UnpreparedSpells_Novice = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Novice[selection - currentIndex] as Spell, UnpreparedSpells_Novice)
+            ShowSpellSelectionList()
             return
         endIf
         currentIndex += UnpreparedSpells_Novice.Length
 
-        if selection < (currentIndex + UnpreparedSpells_Master.Length)
-            Debug.MessageBox(UnpreparedSpells_Apprentice[selection - currentIndex].GetName())
+        if selection < (currentIndex + UnpreparedSpells_Apprentice.Length)
+            UnpreparedSpells_Apprentice = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Apprentice[selection - currentIndex] as Spell, UnpreparedSpells_Apprentice)
+            ShowSpellSelectionList()
             return
         endIf
         currentIndex += UnpreparedSpells_Apprentice.Length
 
         if selection < (currentIndex + UnpreparedSpells_Adept.Length)
-            Debug.MessageBox(UnpreparedSpells_Adept[selection - currentIndex].GetName())
+            UnpreparedSpells_Adept = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Adept[selection - currentIndex] as Spell, UnpreparedSpells_Adept)
+            ShowSpellSelectionList()
             return
         endIf
         currentIndex += UnpreparedSpells_Adept.Length
 
         if selection < (currentIndex + UnpreparedSpells_Expert.Length)
-            Debug.MessageBox(UnpreparedSpells_Expert[selection - currentIndex].GetName())
+            UnpreparedSpells_Expert = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Expert[selection - currentIndex] as Spell, UnpreparedSpells_Expert)
+            ShowSpellSelectionList()
             return
         endIf
         currentIndex += UnpreparedSpells_Expert.Length
 
         if selection < (currentIndex + UnpreparedSpells_Master.Length)
-            Debug.MessageBox(UnpreparedSpells_Master[selection - currentIndex].GetName())
+            UnpreparedSpells_Master = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Master[selection - currentIndex] as Spell, UnpreparedSpells_Master)
+            ShowSpellSelectionList()
             return
         endIf
         currentIndex += UnpreparedSpells_Master.Length
