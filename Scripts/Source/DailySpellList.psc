@@ -16,7 +16,35 @@ GlobalVariable property DailySpellList_PointsEarnedValue auto
 GlobalVariable property DailySpellList_MinSpellCastingMagicka auto
 GlobalVariable property GameDaysPassed auto
 GlobalVariable property GameHour auto
+Message property DailySpellList_BeginMeditation auto
+Message property DailySpellList_EndMeditation auto
+Perk property AlterationNovice00 auto
+Perk property AlterationApprentice25 auto
+Perk property AlterationAdept50 auto
+Perk property AlterationExpert75 auto
+Perk property AlterationMaster100 auto
+Perk property ConjurationNovice00 auto
+Perk property ConjurationApprentice25 auto
+Perk property ConjurationAdept50 auto
+Perk property ConjurationExpert75 auto
+Perk property ConjurationMaster100 auto
+Perk property DestructionNovice00 auto
+Perk property DestructionApprentice25 auto
+Perk property DestructionAdept50 auto
+Perk property DestructionExpert75 auto
+Perk property DestructionMaster100 auto
+Perk property IllusionNovice00 auto
+Perk property IllusionApprentice25 auto
+Perk property IllusionAdept50 auto
+Perk property IllusionExpert75 auto
+Perk property IllusionMaster100 auto
+Perk property RestorationNovice00 auto
+Perk property RestorationApprentice25 auto
+Perk property RestorationAdept50 auto
+Perk property RestorationExpert75 auto
+Perk property RestorationMaster100 auto
 
+bool IsCurrentlyMeditating
 EquipSlot VoiceEquipSlot
 
 event OnInit()
@@ -89,11 +117,36 @@ endFunction
 
 function MeditateOnSpellList()
     if CanPrepareNewSpellList
-        ShowSpellSelectionList()
+        if BeginMeditationPrompt()
+            IsCurrentlyMeditating = true
+            ShowSpellSelectionList()
+        endIf
     else
-        ShowSpellSelectionList() ; <--- for testing
-        ; Debug.MessageBox("You need to wait XXX hours........")
-        ; return
+        ShowSpellSelectionList()
+        Debug.MessageBox("You need to wait XXX hours........")
+    endIf
+endFunction
+
+bool function BeginMeditationPrompt()
+    return DailySpellList_BeginMeditation.Show() == 0
+endFunction
+
+bool function EndMeditationPrompt()
+    return DailySpellList_EndMeditation.Show() == 0
+endFunction
+
+string function GetSpellLevel(Spell theSpell)
+    Perk thePerk = theSpell.GetPerk()
+    if thePerk == AlterationNovice00 || thePerk == ConjurationNovice00 || thePerk == DestructionNovice00 || thePerk == IllusionNovice00 || thePerk == RestorationNovice00
+        return "Novice"
+    elseIf thePerk == AlterationApprentice25 || thePerk == ConjurationApprentice25 || thePerk == DestructionApprentice25 || thePerk == IllusionApprentice25 || thePerk == RestorationApprentice25
+        return "Apprentice"
+    elseIf thePerk == AlterationAdept50 || thePerk == ConjurationAdept50 || thePerk == DestructionAdept50 || thePerk == IllusionAdept50 || thePerk == RestorationAdept50
+        return "Adept"
+    elseIf thePerk == AlterationExpert75 || thePerk == ConjurationExpert75 || thePerk == DestructionExpert75 || thePerk == IllusionExpert75 || thePerk == RestorationExpert75
+        return "Expert"
+    elseIf thePerk == AlterationMaster100 || thePerk == ConjurationMaster100 || thePerk == DestructionMaster100 || thePerk == IllusionMaster100 || thePerk == RestorationMaster100
+        return "Master"
     endIf
 endFunction
 
@@ -105,30 +158,33 @@ function ShowSpellSelectionList()
     list.AddEntryItem(" ")
     list.AddEntryItem("[Available Spells]")
 
-    ; Voice is 
-
     int spellCount = PlayerRef.GetSpellCount()
     int i = 0
     while i < spellCount
         Spell theSpell = PlayerRef.GetNthSpell(i)
         if DoesSpellCostPoints(theSpell)
-            list.AddEntryItem(theSpell.GetName())
+            list.AddEntryItem(theSpell.GetName() + " [" + GetSpellLevel(theSpell) + "]")
         endIf
         i += 1
     endWhile
 
     list.OpenMenu()
 
+    int selection = list.GetResultInt()
+
+    if selection == -1
+        if EndMeditationPrompt()
+            IsCurrentlyMeditating = false
+            DailySpellList_LastMeditationHour.Value = GetTotalHoursPassed()
+        else
+            ShowSpellSelectionList()
+        endIf
+    else
+        ShowSpellSelectionList()
+    endIf
+
     ; "[Prepared Spells]"
     ; "(5 points remaining)"
     ; "xxx [Novice]"
     ; "xxx [Novice]"
-    ; "xxx [Novice]"
-    ; "xxx [Adept]"
-    ; "xxx [Adept]"
-    ; "xxx [Expert]"
-    ; "xxx [Master]"
-
-    ; "[Unprepared]"
-    ; "Flames"
 endFunction
