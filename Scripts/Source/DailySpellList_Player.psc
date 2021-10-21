@@ -1,1 +1,1 @@
-Scriptname DailySpellList_Player extends ReferenceAlias  
+scriptName DailySpellList_Player extends ReferenceAlias
