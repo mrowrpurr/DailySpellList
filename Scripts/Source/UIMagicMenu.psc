@@ -1,4 +1,4 @@
-Scriptname UIMagicMenu extends UIMenuBase  
+scriptName UIMagicMenu extends UIMenuBase  
 
 string property		ROOT_MENU		= "CustomMenu" autoReadonly
 string Property 	MENU_ROOT		= "_root." autoReadonly

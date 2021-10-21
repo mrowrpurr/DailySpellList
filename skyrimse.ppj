@@ -30,7 +30,7 @@
         <!-- <Import>@ModsFolder\FISSES\scripts\source</Import> -->
 
         <!-- These mods DO NOT come with loose .psc files or are not "mods" and need to be setup manually  -->
-        <!-- <Import>@ImportsFolder\SkyUI_5.1_SDK\Scripts\Source</Import> -->
+        <Import>@ImportsFolder\SkyUI_SDK\Scripts\Source</Import>
         <!-- <Import>@ImportsFolder\ConsoleUtil</Import> -->
         <Import>@ImportsFolder\UIExtensions\scripts\source</Import>
         <Import>@ImportsFolder\JContainers\scripts\source</Import>
