@@ -256,6 +256,11 @@ function ShowSpellSelectionList()
 
     list.AddEntryItem("[Prepared Spells]")
     list.AddEntryItem("(" + GetCurrentRemainingSpellPoints() + " points available)")
+    AddSpellsToList(list, PreparedSpells_Novice, "Novice")
+    AddSpellsToList(list, PreparedSpells_Apprentice, "Apprentice")
+    AddSpellsToList(list, PreparedSpells_Adept, "Adept")
+    AddSpellsToList(list, PreparedSpells_Expert, "Expert")
+    AddSpellsToList(list, PreparedSpells_Master, "Master")
     list.AddEntryItem(" ")
     list.AddEntryItem("[Available Spells]")
     AddSpellsToList(list, UnpreparedSpells_Novice, "Novice")
@@ -276,7 +281,60 @@ function ShowSpellSelectionList()
             ShowSpellSelectionList()
         endIf
     else
-        ShowSpellSelectionList()
+        int currentIndex = 2
+
+        currentIndex += PreparedSpells_Novice.Length
+        if selection < currentIndex
+            Debug.MessageBox("Prepared Novice")
+        endIf
+        currentIndex += PreparedSpells_Apprentice.Length
+        if selection < currentIndex
+            Debug.MessageBox("Prepared Apprentice")
+        endIf
+        currentIndex += PreparedSpells_Adept.Length
+        if selection < currentIndex
+            Debug.MessageBox("Prepared Adept")
+        endIf
+        currentIndex += PreparedSpells_Expert.Length
+        if selection < currentIndex
+            Debug.MessageBox("Prepared Expert")
+        endIf
+        currentIndex += PreparedSpells_Master.Length
+        if selection < currentIndex
+            Debug.MessageBox("Prepared Master")
+        endIf
+
+        currentIndex += 2
+
+        if selection < (currentIndex + UnpreparedSpells_Novice.Length)
+            Debug.MessageBox(UnpreparedSpells_Novice[selection - currentIndex].GetName())
+            return
+        endIf
+        currentIndex += UnpreparedSpells_Novice.Length
+
+        if selection < (currentIndex + UnpreparedSpells_Master.Length)
+            Debug.MessageBox(UnpreparedSpells_Apprentice[selection - currentIndex].GetName())
+            return
+        endIf
+        currentIndex += UnpreparedSpells_Apprentice.Length
+
+        if selection < (currentIndex + UnpreparedSpells_Adept.Length)
+            Debug.MessageBox(UnpreparedSpells_Adept[selection - currentIndex].GetName())
+            return
+        endIf
+        currentIndex += UnpreparedSpells_Adept.Length
+
+        if selection < (currentIndex + UnpreparedSpells_Expert.Length)
+            Debug.MessageBox(UnpreparedSpells_Expert[selection - currentIndex].GetName())
+            return
+        endIf
+        currentIndex += UnpreparedSpells_Expert.Length
+
+        if selection < (currentIndex + UnpreparedSpells_Master.Length)
+            Debug.MessageBox(UnpreparedSpells_Master[selection - currentIndex].GetName())
+            return
+        endIf
+        currentIndex += UnpreparedSpells_Master.Length
     endIf
 endFunction
 
