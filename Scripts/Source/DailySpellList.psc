@@ -282,6 +282,17 @@ Form[] function RemoveElement(Form[] theArray, Form theForm)
     return newArray
 endFunction
 
+Form[] function AddElement(Form[] theArray, Form theForm)
+    if theArray
+        theArray = Utility.ResizeFormArray(theArray, theArray.Length + 1)
+        theArray[theArray.Length - 1] = theForm
+    else
+        theArray = new Form[1]
+        theArray[0] = theForm
+    endIf
+    return theArray
+endFunction
+
 function PrepareSpell(Spell theSpell)
     string level = GetSpellLevel(theSpell)
     if level == "Novice"
@@ -359,27 +370,52 @@ function ShowSpellSelectionList()
         int currentIndex = 2 ; The two header lines in the list of prepared
 
         if selection < (currentIndex + PreparedSpells_Novice.Length)
-            Debug.MessageBox(PreparedSpells_Novice[selection - currentIndex].GetName())
+            Spell theSpell = PreparedSpells_Novice[selection - currentIndex] as Spell
+            UnpreparedSpells_Novice = AddElement(UnpreparedSpells_Novice, theSpell)
+            PreparedSpells_Novice = RemoveElement(PreparedSpells_Novice, theSpell)
+            SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            ShowSpellSelectionList()
+            return
         endIf
         currentIndex += PreparedSpells_Novice.Length
 
         if selection < (currentIndex + PreparedSpells_Apprentice.Length)
-            Debug.MessageBox(PreparedSpells_Apprentice[selection - currentIndex].GetName())
+            Spell theSpell = PreparedSpells_Apprentice[selection - currentIndex] as Spell
+            UnpreparedSpells_Apprentice = AddElement(UnpreparedSpells_Apprentice, theSpell)
+            PreparedSpells_Apprentice = RemoveElement(PreparedSpells_Apprentice, theSpell)
+            SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            ShowSpellSelectionList()
+            return
         endIf
         currentIndex += PreparedSpells_Apprentice.Length
 
         if selection < (currentIndex + PreparedSpells_Adept.Length)
-            Debug.MessageBox(PreparedSpells_Adept[selection - currentIndex].GetName())
+            Spell theSpell = PreparedSpells_Adept[selection - currentIndex] as Spell
+            UnpreparedSpells_Adept = AddElement(UnpreparedSpells_Adept, theSpell)
+            PreparedSpells_Adept = RemoveElement(PreparedSpells_Adept, theSpell)
+            SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            ShowSpellSelectionList()
+            return
         endIf
         currentIndex += PreparedSpells_Adept.Length
 
         if selection < (currentIndex + PreparedSpells_Expert.Length)
-            Debug.MessageBox(PreparedSpells_Expert[selection - currentIndex].GetName())
+            Spell theSpell = PreparedSpells_Expert[selection - currentIndex] as Spell
+            UnpreparedSpells_Expert = AddElement(UnpreparedSpells_Expert, theSpell)
+            PreparedSpells_Expert = RemoveElement(PreparedSpells_Expert, theSpell)
+            SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            ShowSpellSelectionList()
+            return
         endIf
         currentIndex += PreparedSpells_Expert.Length
 
         if selection < (currentIndex + PreparedSpells_Master.Length)
-            Debug.MessageBox(PreparedSpells_Master[selection - currentIndex].GetName())
+            Spell theSpell = PreparedSpells_Master[selection - currentIndex] as Spell
+            UnpreparedSpells_Master = AddElement(UnpreparedSpells_Master, theSpell)
+            PreparedSpells_Master = RemoveElement(PreparedSpells_Master, theSpell)
+            SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            ShowSpellSelectionList()
+            return
         endIf
         currentIndex += PreparedSpells_Master.Length
 
@@ -425,7 +461,9 @@ endFunction
 function AddSpellsToList(UIListMenu list, Form[] spells, string level)
     int i = 0
     while i < spells.Length
-        list.AddEntryItem(spells[i].GetName() + " [" + level + "]")
+        ; if option x ... show points or not point
+        list.AddEntryItem(spells[i].GetName() + " [" + level + "]" + \
+            " (" + GetPointsRequiredForSpell(spells[i] as Spell) + ")")
         i += 1
     endWhile
 endFunction
