@@ -27,9 +27,14 @@ event OnPageReset(string page)
     AddSliderOption("Master", 5)
     AddEmptyOption()
 
+    AddHeaderOption("Spell Options")
+    AddToggleOption("Restrict Racial Spells", true)
+    AddEmptyOption()
+
     AddHeaderOption("Spell Points Obtained Per 10x Magicka")
     AddSliderOption("Minimum Magicka required to cast spells", 100)
-    AddSliderOption("Spell Points Obtained Per 10x Magicka", 1)
+    AddSliderOption("Spell Points Obtained Per Magicka Increase", 1)
+    AddSliderOption("Magicka Increase Size", 1)
 
     SetCursorPosition(1)
 
