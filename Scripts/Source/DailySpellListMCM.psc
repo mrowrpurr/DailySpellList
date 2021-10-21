@@ -38,11 +38,6 @@ event OnPageReset(string page)
 
     SetCursorPosition(1)
 
-    AddHeaderOption("General Settings")
-    ; NOTE TO SELF: Make a global for this option:
-    AddToggleOption("Show point value in meditation menu", true)
-    AddEmptyOption()
-
     AddHeaderOption("Spells Without Restrictions")
     AddMenuOption("Select spells", "CHOOSE SPELL")
 endEvent

@@ -461,7 +461,6 @@ endFunction
 function AddSpellsToList(UIListMenu list, Form[] spells, string level)
     int i = 0
     while i < spells.Length
-        ; if option x ... show points or not point
         list.AddEntryItem(spells[i].GetName() + " [" + level + "]" + \
             " (" + GetPointsRequiredForSpell(spells[i] as Spell) + ")")
         i += 1
