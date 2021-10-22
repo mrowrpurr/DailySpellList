@@ -363,9 +363,11 @@ int function GetPointsRequiredForSpell(Spell theSpell)
     endIf
 endFunction
 
-function ShowSpellSelectionList()
+function ShowSpellSelectionList(string filter = "")
     UIListMenu list = UIExtensions.GetMenu("UIListMenu") as UIListMenu
 
+    Form[] AllDisplayedUnpreparedSpells
+    
     list.AddEntryItem("[Prepared Spells]")
     list.AddEntryItem("(" + GetCurrentRemainingSpellPoints() + " points available)")
     AddSpellsToList(list, PreparedSpells_Novice, "Novice")
@@ -375,11 +377,12 @@ function ShowSpellSelectionList()
     AddSpellsToList(list, PreparedSpells_Master, "Master")
     list.AddEntryItem(" ")
     list.AddEntryItem("[Available Spells]")
-    AddSpellsToList(list, UnpreparedSpells_Novice, "Novice")
-    AddSpellsToList(list, UnpreparedSpells_Apprentice, "Apprentice")
-    AddSpellsToList(list, UnpreparedSpells_Adept, "Adept")
-    AddSpellsToList(list, UnpreparedSpells_Expert, "Expert")
-    AddSpellsToList(list, UnpreparedSpells_Master, "Master")
+    list.AddEntryItem("[Click To Filter Spells]")
+    AllDisplayedUnpreparedSpells = AddSpellsToListAndReturnArray(AllDisplayedUnpreparedSpells, list, UnpreparedSpells_Novice, "Novice", filter)
+    AllDisplayedUnpreparedSpells = AddSpellsToListAndReturnArray(AllDisplayedUnpreparedSpells, list, UnpreparedSpells_Apprentice, "Apprentice", filter)
+    AllDisplayedUnpreparedSpells = AddSpellsToListAndReturnArray(AllDisplayedUnpreparedSpells, list, UnpreparedSpells_Adept, "Adept", filter)
+    AllDisplayedUnpreparedSpells = AddSpellsToListAndReturnArray(AllDisplayedUnpreparedSpells, list, UnpreparedSpells_Expert, "Expert", filter)
+    AllDisplayedUnpreparedSpells = AddSpellsToListAndReturnArray(AllDisplayedUnpreparedSpells, list, UnpreparedSpells_Master, "Master", filter)
 
     list.OpenMenu()
 
@@ -452,50 +455,81 @@ function ShowSpellSelectionList()
 
         currentIndex += 2 ; The header and empty space in the list for unprepared
 
-        if selection < (currentIndex + UnpreparedSpells_Novice.Length)
-            Spell theSpell = UnpreparedSpells_Novice[selection - currentIndex] as Spell
-            UnpreparedSpells_Novice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Novice)
-            PlayerRef.AddSpell(theSpell, abVerbose = false)
-            ShowSpellSelectionList()
+        ; Filter
+        if selection == currentIndex
+            string query = GetUserInput()
+            if query
+                ShowSpellSelectionList(query)
+            else
+                ShowSpellSelectionList()
+            endIf
             return
         endIf
-        currentIndex += UnpreparedSpells_Novice.Length
 
-        if selection < (currentIndex + UnpreparedSpells_Apprentice.Length)
-            Spell theSpell = UnpreparedSpells_Apprentice[selection - currentIndex] as Spell
-            UnpreparedSpells_Apprentice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Apprentice)
-            PlayerRef.AddSpell(theSpell, abVerbose = false)
-            ShowSpellSelectionList()
-            return
-        endIf
-        currentIndex += UnpreparedSpells_Apprentice.Length
+        currentIndex += 1 ; Filter
 
-        if selection < (currentIndex + UnpreparedSpells_Adept.Length)
-            Spell theSpell = UnpreparedSpells_Adept[selection - currentIndex] as Spell
-            UnpreparedSpells_Adept = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Adept)
-            PlayerRef.AddSpell(theSpell, abVerbose = false)
-            ShowSpellSelectionList()
-            return
-        endIf
-        currentIndex += UnpreparedSpells_Adept.Length
+        Spell theSpell    = AllDisplayedUnpreparedSpells[selection - currentIndex] as Spell
+        string spellLevel = GetSpellLevel(theSpell)
 
-        if selection < (currentIndex + UnpreparedSpells_Expert.Length)
-            Spell theSpell = UnpreparedSpells_Expert[selection - currentIndex] as Spell
-            UnpreparedSpells_Expert = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Expert)
-            PlayerRef.AddSpell(theSpell, abVerbose = false)
-            ShowSpellSelectionList()
-            return
-        endIf
-        currentIndex += UnpreparedSpells_Expert.Length
+        Debug.MessageBox("We need to fix this, BUT we have the filtered spell... " + theSpell.GetName())
+        return
 
-        if selection < (currentIndex + UnpreparedSpells_Master.Length)
-            Spell theSpell = UnpreparedSpells_Master[selection - currentIndex] as Spell
-            UnpreparedSpells_Master = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Master)
-            PlayerRef.AddSpell(theSpell, abVerbose = false)
-            ShowSpellSelectionList()
-            return
+        if spellLevel == "Novice"
+            ;
+        elseIf spellLevel == "Apprentice"
+            ;
+        elseIf spellLevel == "Adept"
+            ;
+        elseIf spellLevel == "Expert"
+            ;
+        elseIf spellLevel == "Master"
+            ;
         endIf
-        currentIndex += UnpreparedSpells_Master.Length
+
+        ; if selection < (currentIndex + UnpreparedSpells_Novice.Length)
+        ;     Spell theSpell = UnpreparedSpells_Novice[selection - currentIndex] as Spell
+        ;     UnpreparedSpells_Novice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Novice)
+        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
+        ;     ShowSpellSelectionList()
+        ;     return
+        ; endIf
+        ; currentIndex += UnpreparedSpells_Novice.Length
+
+        ; if selection < (currentIndex + UnpreparedSpells_Apprentice.Length)
+        ;     Spell theSpell = UnpreparedSpells_Apprentice[selection - currentIndex] as Spell
+        ;     UnpreparedSpells_Apprentice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Apprentice)
+        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
+        ;     ShowSpellSelectionList()
+        ;     return
+        ; endIf
+        ; currentIndex += UnpreparedSpells_Apprentice.Length
+
+        ; if selection < (currentIndex + UnpreparedSpells_Adept.Length)
+        ;     Spell theSpell = UnpreparedSpells_Adept[selection - currentIndex] as Spell
+        ;     UnpreparedSpells_Adept = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Adept)
+        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
+        ;     ShowSpellSelectionList()
+        ;     return
+        ; endIf
+        ; currentIndex += UnpreparedSpells_Adept.Length
+
+        ; if selection < (currentIndex + UnpreparedSpells_Expert.Length)
+        ;     Spell theSpell = UnpreparedSpells_Expert[selection - currentIndex] as Spell
+        ;     UnpreparedSpells_Expert = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Expert)
+        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
+        ;     ShowSpellSelectionList()
+        ;     return
+        ; endIf
+        ; currentIndex += UnpreparedSpells_Expert.Length
+
+        ; if selection < (currentIndex + UnpreparedSpells_Master.Length)
+        ;     Spell theSpell = UnpreparedSpells_Master[selection - currentIndex] as Spell
+        ;     UnpreparedSpells_Master = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Master)
+        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
+        ;     ShowSpellSelectionList()
+        ;     return
+        ; endIf
+        ; currentIndex += UnpreparedSpells_Master.Length
     endIf
 endFunction
 
@@ -506,4 +540,28 @@ function AddSpellsToList(UIListMenu list, Form[] spells, string level)
             " (" + GetPointsRequiredForSpell(spells[i] as Spell) + ")")
         i += 1
     endWhile
+endFunction
+
+Form[] function AddSpellsToListAndReturnArray(Form[] theArray, UIListMenu list, Form[] spells, string level, string filter = "")
+    int i = 0
+    while i < spells.Length
+        Form theSpell = spells[i]
+        if ! filter || StringUtil.Find(theSpell.GetName(), filter) > -1
+            list.AddEntryItem(theSpell.GetName() + " [" + level + "]" + \
+                " (" + GetPointsRequiredForSpell(theSpell as Spell) + ")")
+            theArray = Utility.ResizeFormArray(theArray, theArray.Length + 1)
+            theArray[theArray.Length - 1] = theSpell
+        endIf
+        i += 1
+    endWhile
+    return theArray
+endFunction
+
+string function GetUserInput(string defaultText = "")
+    UITextEntryMenu textEntry = UIExtensions.GetMenu("UITextEntryMenu") as UITextEntryMenu
+    if defaultText
+        textEntry.SetPropertyString("text", defaultText)
+    endIf
+    textEntry.OpenMenu()
+    return textEntry.GetResultString()
 endFunction
