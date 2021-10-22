@@ -66,7 +66,6 @@ function AddTestSpells()
     PlayerRef.AddSpell(Game.GetForm(0x45f9c) as Spell)
     PlayerRef.AddSpell(Game.GetForm(0x2dd29) as Spell)
     PlayerRef.AddSpell(Game.GetForm(0x2b96b) as Spell)
-    PlayerRef.AddSpell(Game.GetForm(0xb3165) as Spell)
 endFunction
 
 event OnInit()
@@ -83,6 +82,18 @@ bool property CanPrepareNewSpellList
         return lastMeditationGameTime == 0 || ((currentGameHoursPassed - lastMeditationGameTime) >= minimumHoursRequired)
     endFunction
 endProperty
+
+int function GetRemainingHoursBeforeCanMeditateAgain()
+    int currentGameHoursPassed   = GetTotalHoursPassed()
+    int lastMeditationGameTime   = DailySpellList_LastMeditationHour.Value as int
+    int minimumHoursRequired     = DailySpellList_MinHours.Value as int
+    int hoursSinceLastMeditation = currentGameHoursPassed - lastMeditationGameTime
+    if hoursSinceLastMeditation >= minimumHoursRequired
+        return 0
+    else
+        return minimumHoursRequired - hoursSinceLastMeditation
+    endIf
+endFunction
 
 int function GetTotalHoursPassed()
     return ((GameDaysPassed.Value as int) * 24) + (GameHour.Value as int)
@@ -127,11 +138,11 @@ endFunction
 
 function AddUnlearnedSpell(Spell theSpell)
     if DoesSpellCostPoints(theSpell)
-        PlayerRef.RemoveSpell(theSpell)
         string level = GetSpellLevel(theSpell)
 
         if level == "Novice"
-            if UnpreparedSpells_Novice.Find(theSpell) == -1
+            if UnpreparedSpells_Novice.Find(theSpell) == -1 && PreparedSpells_Novice.Find(theSpell) == -1 
+                PlayerRef.RemoveSpell(theSpell)
                 if ! UnpreparedSpells_Novice
                     UnpreparedSpells_Novice = new Form[1]
                     UnpreparedSpells_Novice[0] = theSpell
@@ -141,7 +152,8 @@ function AddUnlearnedSpell(Spell theSpell)
                 endIf
             endIf
         elseIf level == "Apprentice"
-            if UnpreparedSpells_Apprentice.Find(theSpell) == -1
+            if UnpreparedSpells_Apprentice.Find(theSpell) == -1 && PreparedSpells_Apprentice.Find(theSpell) == -1 
+                PlayerRef.RemoveSpell(theSpell)
                 if ! UnpreparedSpells_Apprentice
                     UnpreparedSpells_Apprentice = new Form[1]
                     UnpreparedSpells_Apprentice[0] = theSpell
@@ -152,7 +164,8 @@ function AddUnlearnedSpell(Spell theSpell)
             endIf
 
         elseIf level == "Adept"
-            if UnpreparedSpells_Adept.Find(theSpell) == -1
+            if UnpreparedSpells_Adept.Find(theSpell) == -1 && PreparedSpells_Adept.Find(theSpell) == -1 
+                PlayerRef.RemoveSpell(theSpell)
                 if ! UnpreparedSpells_Adept
                     UnpreparedSpells_Adept = new Form[1]
                     UnpreparedSpells_Adept[0] = theSpell
@@ -163,7 +176,8 @@ function AddUnlearnedSpell(Spell theSpell)
             endIf
 
         elseIf level == "Expert"
-            if UnpreparedSpells_Expert.Find(theSpell) == -1
+            if UnpreparedSpells_Expert.Find(theSpell) == -1 && PreparedSpells_Expert.Find(theSpell) == -1
+                PlayerRef.RemoveSpell(theSpell)
                 if ! UnpreparedSpells_Expert
                     UnpreparedSpells_Expert = new Form[1]
                     UnpreparedSpells_Expert[0] = theSpell
@@ -174,7 +188,8 @@ function AddUnlearnedSpell(Spell theSpell)
             endIf
 
         elseIf level == "Master"
-            if UnpreparedSpells_Master.Find(theSpell) == -1
+            if UnpreparedSpells_Master.Find(theSpell) == -1 && PreparedSpells_Master.Find(theSpell) == -1
+                PlayerRef.RemoveSpell(theSpell)
                 if ! UnpreparedSpells_Master
                     UnpreparedSpells_Master = new Form[1]
                     UnpreparedSpells_Master[0] = theSpell
@@ -216,7 +231,10 @@ function LoadAllPlayerSpellsAsUnprepared()
 endFunction
 
 function MeditateOnSpellList()    
-    if CanPrepareNewSpellList
+    int remainingHours = GetRemainingHoursBeforeCanMeditateAgain()
+    if remainingHours > 0
+        Debug.MessageBox("You need to wait " + remainingHours + " hour(s) before you can meditate on your spells.")
+    else
         if BeginMeditationPrompt()
             IsCurrentlyMeditating = true
             if ! PlayerSpellsLoaded
@@ -224,9 +242,6 @@ function MeditateOnSpellList()
             endIf
             ShowSpellSelectionList()
         endIf
-    else
-        ShowSpellSelectionList()
-        Debug.MessageBox("You need to wait XXX hours........")
     endIf
 endFunction
 
@@ -293,6 +308,14 @@ Form[] function AddElement(Form[] theArray, Form theForm)
     return theArray
 endFunction
 
+bool function IsSpellPrepared(Spell theSpell)
+    return PreparedSpells_Novice.Find(theSpell)     > -1 || \
+           PreparedSpells_Apprentice.Find(theSpell) > -1 || \
+           PreparedSpells_Adept.Find(theSpell)      > -1 || \
+           PreparedSpells_Expert.Find(theSpell)     > -1 || \
+           PreparedSpells_Master.Find(theSpell)     > -1
+endFunction
+
 function PrepareSpell(Spell theSpell)
     string level = GetSpellLevel(theSpell)
     if level == "Novice"
@@ -316,6 +339,7 @@ function PrepareSpell(Spell theSpell)
         PreparedSpells_Master[PreparedSpells_Master.Length - 1] = theSpell
         SpellPointsUsed += DailySpellList_PointsRequired_Master.Value as int
     endIf
+    PlayerRef.AddSpell(theSpell, abVerbose = false)
 endFunction
 
 bool function HasEnoughPointsAvailableToPrepareSpell(Spell theSpell)
@@ -371,6 +395,7 @@ function ShowSpellSelectionList()
 
         if selection < (currentIndex + PreparedSpells_Novice.Length)
             Spell theSpell = PreparedSpells_Novice[selection - currentIndex] as Spell
+            PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Novice = AddElement(UnpreparedSpells_Novice, theSpell)
             PreparedSpells_Novice = RemoveElement(PreparedSpells_Novice, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
@@ -381,6 +406,7 @@ function ShowSpellSelectionList()
 
         if selection < (currentIndex + PreparedSpells_Apprentice.Length)
             Spell theSpell = PreparedSpells_Apprentice[selection - currentIndex] as Spell
+            PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Apprentice = AddElement(UnpreparedSpells_Apprentice, theSpell)
             PreparedSpells_Apprentice = RemoveElement(PreparedSpells_Apprentice, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
@@ -391,6 +417,7 @@ function ShowSpellSelectionList()
 
         if selection < (currentIndex + PreparedSpells_Adept.Length)
             Spell theSpell = PreparedSpells_Adept[selection - currentIndex] as Spell
+            PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Adept = AddElement(UnpreparedSpells_Adept, theSpell)
             PreparedSpells_Adept = RemoveElement(PreparedSpells_Adept, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
@@ -401,6 +428,7 @@ function ShowSpellSelectionList()
 
         if selection < (currentIndex + PreparedSpells_Expert.Length)
             Spell theSpell = PreparedSpells_Expert[selection - currentIndex] as Spell
+            PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Expert = AddElement(UnpreparedSpells_Expert, theSpell)
             PreparedSpells_Expert = RemoveElement(PreparedSpells_Expert, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
@@ -411,6 +439,7 @@ function ShowSpellSelectionList()
 
         if selection < (currentIndex + PreparedSpells_Master.Length)
             Spell theSpell = PreparedSpells_Master[selection - currentIndex] as Spell
+            PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Master = AddElement(UnpreparedSpells_Master, theSpell)
             PreparedSpells_Master = RemoveElement(PreparedSpells_Master, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
@@ -422,35 +451,45 @@ function ShowSpellSelectionList()
         currentIndex += 2 ; The header and empty space in the list for unprepared
 
         if selection < (currentIndex + UnpreparedSpells_Novice.Length)
-            UnpreparedSpells_Novice = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Novice[selection - currentIndex] as Spell, UnpreparedSpells_Novice)
+            Spell theSpell = UnpreparedSpells_Novice[selection - currentIndex] as Spell
+            UnpreparedSpells_Novice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Novice)
+            PlayerRef.AddSpell(theSpell, abVerbose = false)
             ShowSpellSelectionList()
             return
         endIf
         currentIndex += UnpreparedSpells_Novice.Length
 
         if selection < (currentIndex + UnpreparedSpells_Apprentice.Length)
-            UnpreparedSpells_Apprentice = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Apprentice[selection - currentIndex] as Spell, UnpreparedSpells_Apprentice)
+            Spell theSpell = UnpreparedSpells_Apprentice[selection - currentIndex] as Spell
+            UnpreparedSpells_Apprentice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Apprentice)
+            PlayerRef.AddSpell(theSpell, abVerbose = false)
             ShowSpellSelectionList()
             return
         endIf
         currentIndex += UnpreparedSpells_Apprentice.Length
 
         if selection < (currentIndex + UnpreparedSpells_Adept.Length)
-            UnpreparedSpells_Adept = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Adept[selection - currentIndex] as Spell, UnpreparedSpells_Adept)
+            Spell theSpell = UnpreparedSpells_Adept[selection - currentIndex] as Spell
+            UnpreparedSpells_Adept = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Adept)
+            PlayerRef.AddSpell(theSpell, abVerbose = false)
             ShowSpellSelectionList()
             return
         endIf
         currentIndex += UnpreparedSpells_Adept.Length
 
         if selection < (currentIndex + UnpreparedSpells_Expert.Length)
-            UnpreparedSpells_Expert = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Expert[selection - currentIndex] as Spell, UnpreparedSpells_Expert)
+            Spell theSpell = UnpreparedSpells_Expert[selection - currentIndex] as Spell
+            UnpreparedSpells_Expert = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Expert)
+            PlayerRef.AddSpell(theSpell, abVerbose = false)
             ShowSpellSelectionList()
             return
         endIf
         currentIndex += UnpreparedSpells_Expert.Length
 
         if selection < (currentIndex + UnpreparedSpells_Master.Length)
-            UnpreparedSpells_Master = TryToPrepareSpellAndReturnNewArray(UnpreparedSpells_Master[selection - currentIndex] as Spell, UnpreparedSpells_Master)
+            Spell theSpell = UnpreparedSpells_Master[selection - currentIndex] as Spell
+            UnpreparedSpells_Master = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Master)
+            PlayerRef.AddSpell(theSpell, abVerbose = false)
             ShowSpellSelectionList()
             return
         endIf

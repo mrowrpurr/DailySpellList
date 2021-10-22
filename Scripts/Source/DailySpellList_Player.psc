@@ -51,7 +51,17 @@ event OnMenuClose(string menuName)
     endIf
 endEvent
 
-; TODO TODO TODO
 event OnSpellLearned(Spell theSpell)
     SpellListMod.AddUnlearnedSpell(theSpell)
+endEvent
+
+event OnObjectEquipped(Form theObject, ObjectReference theObjectInstance)
+    Spell theSpell = theObject as Spell
+    if theSpell && SpellListMod.DoesSpellCostPoints(theSpell)
+        if ! SpellListMod.IsSpellPrepared(theSpell)
+            GetActorReference().UnequipSpell(theSpell, 0)
+            GetActorReference().UnequipSpell(theSpell, 1)
+            GetActorReference().RemoveSpell(theSpell)
+        endIf
+    endIf
 endEvent
