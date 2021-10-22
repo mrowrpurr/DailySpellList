@@ -55,6 +55,7 @@ Form[] PreparedSpells_Adept
 Form[] PreparedSpells_Expert
 Form[] PreparedSpells_Master
 
+bool HasPlayerMeditated
 bool PlayerSpellsLoaded
 int  SpellPointsUsed
 bool IsCurrentlyMeditating
@@ -230,13 +231,14 @@ function LoadAllPlayerSpellsAsUnprepared()
     endWhile
 endFunction
 
-function MeditateOnSpellList()    
+function MeditateOnSpellList()
     int remainingHours = GetRemainingHoursBeforeCanMeditateAgain()
-    if remainingHours > 0
+    if remainingHours > 0 && HasPlayerMeditated
         Debug.MessageBox("You need to wait " + remainingHours + " hour(s) before you can meditate on your spells.")
     else
         if BeginMeditationPrompt()
             IsCurrentlyMeditating = true
+            HasPlayerMeditated = true
             if ! PlayerSpellsLoaded
                 PlayerSpellsLoaded = true
             endIf

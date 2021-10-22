@@ -62,6 +62,7 @@ event OnObjectEquipped(Form theObject, ObjectReference theObjectInstance)
             GetActorReference().UnequipSpell(theSpell, 0)
             GetActorReference().UnequipSpell(theSpell, 1)
             GetActorReference().RemoveSpell(theSpell)
+            Debug.MessageBox(theSpell.GetName() + " is not currently prepared")
         endIf
     endIf
 endEvent
