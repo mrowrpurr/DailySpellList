@@ -5,17 +5,18 @@ GlobalVariable property DailySpellList_MinHours auto
 GlobalVariable property DailySpellList_SleepPrompt auto
 GlobalVariable property DailySpellList_WaitPrompt auto
 GlobalVariable property DailySpellList_TravelPrompt auto
+GlobalVariable property DailySpellList_LevelUpDisplay auto
 GlobalVariable property DailySpellList_LastMeditationHour auto
 GlobalVariable property DailySpellList_PointsRequired_Novice auto
 GlobalVariable property DailySpellList_PointsRequired_Apprentice auto
 GlobalVariable property DailySpellList_PointsRequired_Adept auto
 GlobalVariable property DailySpellList_PointsRequired_Expert auto
 GlobalVariable property DailySpellList_PointsRequired_Master auto
-GlobalVariable property DailySpellList_PointsEarnedInterval auto
 GlobalVariable property DailySpellList_PointsEarnedValue auto
 GlobalVariable property DailySpellList_MinSpellCastingMagicka auto
 GlobalVariable property GameDaysPassed auto
 GlobalVariable property GameHour auto
+int property DailySpellList_PointsEarnedInterval = 10 autoReadonly
 Message property DailySpellList_BeginMeditation auto
 Message property DailySpellList_EndMeditation auto
 Message property DailySpellList_NotEnoughPoints auto
@@ -100,6 +101,10 @@ int function GetTotalHoursPassed()
     return ((GameDaysPassed.Value as int) * 24) + (GameHour.Value as int)
 endFunction
 
+function DisplayLevelUpInfo()
+
+endFunction
+
 bool function DoesSpellCostPoints(Spell theSpell)
     if ! theSpell.GetPerk()
         return false
@@ -107,13 +112,13 @@ bool function DoesSpellCostPoints(Spell theSpell)
     if theSpell.GetEquipType() == VoiceEquipSlot
         return false
     endIf
-    ; if IsCantrip(theSpell)
-    ;     return false
-    ; endIf
+    if IsSpellWithoutRestriction(theSpell)
+        return false
+    endIf
     return true
 endFunction
 
-bool function IsCantrip(Spell theSpell)
+bool function IsSpellWithoutRestriction(Spell theSpell)
     ; TODO ;
 endFunction
 
@@ -121,7 +126,7 @@ int function GetTotalAvailableSpellPoints()
     int baseMagicka             = PlayerRef.GetBaseActorValue("Magicka")      as int
     int minMagickaRequired      = DailySpellList_MinSpellCastingMagicka.Value as int
     int pointsPerInterval       = DailySpellList_PointsEarnedValue.Value      as int
-    int intervalSize            = DailySpellList_PointsEarnedInterval.Value   as int
+    int intervalSize            = DailySpellList_PointsEarnedInterval         as int
     int amountOfMagickaOverBase = baseMagicka - minMagickaRequired
 
     if amountOfMagickaOverBase <= 0
@@ -468,68 +473,28 @@ function ShowSpellSelectionList(string filter = "")
 
         currentIndex += 1 ; Filter
 
-        Spell theSpell    = AllDisplayedUnpreparedSpells[selection - currentIndex] as Spell
-        string spellLevel = GetSpellLevel(theSpell)
+        int availablePoints = GetTotalAvailableSpellPoints()
+        Spell theSpell      = AllDisplayedUnpreparedSpells[selection - currentIndex] as Spell
+        string spellLevel   = GetSpellLevel(theSpell)
 
-        Debug.MessageBox("We need to fix this, BUT we have the filtered spell... " + theSpell.GetName())
-        return
-
-        if spellLevel == "Novice"
-            ;
-        elseIf spellLevel == "Apprentice"
-            ;
-        elseIf spellLevel == "Adept"
-            ;
-        elseIf spellLevel == "Expert"
-            ;
-        elseIf spellLevel == "Master"
-            ;
+        if availablePoints >= GetPointsRequiredForSpell(theSpell)
+            PlayerRef.AddSpell(theSpell, abVerbose = false)
         endIf
 
-        ; if selection < (currentIndex + UnpreparedSpells_Novice.Length)
-        ;     Spell theSpell = UnpreparedSpells_Novice[selection - currentIndex] as Spell
-        ;     UnpreparedSpells_Novice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Novice)
-        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
-        ;     ShowSpellSelectionList()
-        ;     return
-        ; endIf
-        ; currentIndex += UnpreparedSpells_Novice.Length
+        if spellLevel == "Novice"
+            UnpreparedSpells_Novice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Novice)
+        elseIf spellLevel == "Apprentice"
+            UnpreparedSpells_Apprentice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Apprentice)
+        elseIf spellLevel == "Adept"
+            UnpreparedSpells_Adept = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Adept)
+        elseIf spellLevel == "Expert"
+            UnpreparedSpells_Expert = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Expert)
+        elseIf spellLevel == "Master"
+            UnpreparedSpells_Master = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Master)
+        endIf
 
-        ; if selection < (currentIndex + UnpreparedSpells_Apprentice.Length)
-        ;     Spell theSpell = UnpreparedSpells_Apprentice[selection - currentIndex] as Spell
-        ;     UnpreparedSpells_Apprentice = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Apprentice)
-        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
-        ;     ShowSpellSelectionList()
-        ;     return
-        ; endIf
-        ; currentIndex += UnpreparedSpells_Apprentice.Length
-
-        ; if selection < (currentIndex + UnpreparedSpells_Adept.Length)
-        ;     Spell theSpell = UnpreparedSpells_Adept[selection - currentIndex] as Spell
-        ;     UnpreparedSpells_Adept = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Adept)
-        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
-        ;     ShowSpellSelectionList()
-        ;     return
-        ; endIf
-        ; currentIndex += UnpreparedSpells_Adept.Length
-
-        ; if selection < (currentIndex + UnpreparedSpells_Expert.Length)
-        ;     Spell theSpell = UnpreparedSpells_Expert[selection - currentIndex] as Spell
-        ;     UnpreparedSpells_Expert = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Expert)
-        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
-        ;     ShowSpellSelectionList()
-        ;     return
-        ; endIf
-        ; currentIndex += UnpreparedSpells_Expert.Length
-
-        ; if selection < (currentIndex + UnpreparedSpells_Master.Length)
-        ;     Spell theSpell = UnpreparedSpells_Master[selection - currentIndex] as Spell
-        ;     UnpreparedSpells_Master = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Master)
-        ;     PlayerRef.AddSpell(theSpell, abVerbose = false)
-        ;     ShowSpellSelectionList()
-        ;     return
-        ; endIf
-        ; currentIndex += UnpreparedSpells_Master.Length
+        ShowSpellSelectionList()
+        return
     endIf
 endFunction
 

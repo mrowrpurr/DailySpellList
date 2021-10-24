@@ -15,6 +15,7 @@ function ListenForEvents()
     ListenForSleep()
     ListenForWait()
     ListenForNewSpellLearned()
+    ListenForLevelUp()
 endFunction
 
 function ListenForSleep()
@@ -31,6 +32,12 @@ endFunction
 
 function ListenForNewSpellLearned()
     PO3_Events_Alias.RegisterForSpellLearned(self)
+endFunction
+
+function ListenForLevelUp()
+    if SpellListMod.DailySpellList_LevelUpDisplay.Value > 0
+        PO3_Events_Alias.RegisterForLevelIncrease(self)
+    endIf
 endFunction
 
 event OnSleepStop(bool interrupted)
@@ -53,6 +60,12 @@ endEvent
 
 event OnSpellLearned(Spell theSpell)
     SpellListMod.AddUnlearnedSpell(theSpell)
+endEvent
+
+event OnLevelIncrease(int theLevel)
+    if SpellListMod.DailySpellList_LevelUpDisplay.Value > 0
+        SpellListMod.DisplayLevelUpInfo()
+    endIf
 endEvent
 
 event OnObjectEquipped(Form theObject, ObjectReference theObjectInstance)
