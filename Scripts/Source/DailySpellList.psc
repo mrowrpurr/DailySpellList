@@ -1,6 +1,7 @@
 scriptName DailySpellList extends Quest
 
 Actor property PlayerRef auto
+DailySpellList_Player property DailySpellList_PlayerReferenceAlias auto
 GlobalVariable property DailySpellList_MinHours auto
 GlobalVariable property DailySpellList_SleepPrompt auto
 GlobalVariable property DailySpellList_WaitPrompt auto
@@ -102,7 +103,7 @@ int function GetTotalHoursPassed()
 endFunction
 
 function DisplayLevelUpInfo()
-
+    Debug.MessageBox("TODO")
 endFunction
 
 bool function DoesSpellCostPoints(Spell theSpell)

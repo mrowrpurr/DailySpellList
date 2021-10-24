@@ -4,6 +4,7 @@ DailySpellList property SpellListMod auto
 
 event OnInit()
     SpellListMod = GetOwningQuest() as DailySpellList
+    SpellListMod.DailySpellList_PlayerReferenceAlias = self
     ListenForEvents()
 endEvent
 
@@ -24,10 +25,18 @@ function ListenForSleep()
     endIf
 endFunction
 
+function StopListeningForSleep()
+    UnregisterForSleep()
+endFunction
+
 function ListenForWait()
     if SpellListMod.DailySpellList_WaitPrompt.Value > 0
         RegisterForMenu("Sleep/Wait Menu")
     endIf
+endFunction
+
+function StopListeningForWait()
+    UnregisterForMenu("Sleep/Wait Menu")
 endFunction
 
 function ListenForNewSpellLearned()

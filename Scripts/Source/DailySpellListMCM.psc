@@ -39,11 +39,11 @@ event OnPageReset(string page)
     AddEmptyOption()
 
     AddHeaderOption("Spell Points Required Per Spell Level")
-    oid_SpellPoints_Novice = AddSliderOption("Novice", 1)
-    oid_SpellPoints_Apprentice = AddSliderOption("Apprentice", 2)
-    oid_SpellPoints_Adept = AddSliderOption("Adept", 3)
-    oid_SpellPoints_Expert = AddSliderOption("Expert", 4)
-    oid_SpellPoints_Master = AddSliderOption("Master", 5)
+    oid_SpellPoints_Novice = AddSliderOption("Novice", SpellListMod.DailySpellList_PointsRequired_Novice.Value)
+    oid_SpellPoints_Apprentice = AddSliderOption("Apprentice", SpellListMod.DailySpellList_PointsRequired_Apprentice.Value)
+    oid_SpellPoints_Adept = AddSliderOption("Adept", SpellListMod.DailySpellList_PointsRequired_Adept.Value)
+    oid_SpellPoints_Expert = AddSliderOption("Expert", SpellListMod.DailySpellList_PointsRequired_Expert.Value)
+    oid_SpellPoints_Master = AddSliderOption("Master", SpellListMod.DailySpellList_PointsRequired_Master.Value)
 
     SetCursorPosition(1)
 
@@ -52,8 +52,8 @@ event OnPageReset(string page)
     AddEmptyOption()
 
     AddHeaderOption("Spell Point Magicka Requirements")
-    oid_MinimumMagicka = AddSliderOption("Minimum Magicka required to cast spells", 90)
-    oid_SpellPointsPerMagickaIncrease = AddSliderOption("Spell Points obtained per Magicka increase", 1)
+    oid_MinimumMagicka = AddSliderOption("Minimum Magicka required to cast spells", SpellListMod.DailySpellList_MinSpellCastingMagicka.Value)
+    oid_SpellPointsPerMagickaIncrease = AddSliderOption("Spell Points obtained per Magicka increase", SpellListMod.DailySpellList_PointsEarnedValue.Value)
     AddEmptyOption()
 
     AddHeaderOption("Spells that can be cast without restriction")
@@ -94,13 +94,46 @@ event OnOptionSliderOpen(int optionId)
     if optionId == oid_MinimumHours
         SetSliderDialogRange(0, 24 * 7)
         SetSliderDialogStartValue(SpellListMod.DailySpellList_MinHours.Value)
+    elseIf optionId == oid_MinimumMagicka
+        SetSliderDialogRange(0, 500)
+        SetSliderDialogStartValue(SpellListMod.DailySpellList_MinSpellCastingMagicka.Value)
+    elseIf optionId == oid_SpellPointsPerMagickaIncrease
+        SetSliderDialogRange(1, 100)
+        SetSliderDialogStartValue(SpellListMod.DailySpellList_PointsEarnedValue.Value)
+    else
+        SetSliderDialogRange(0, 100)
+        if optionId == oid_SpellPoints_Novice
+            SetSliderDialogStartValue(SpellListMod.DailySpellList_PointsRequired_Novice.Value)
+        elseIf optionId == oid_SpellPoints_Apprentice
+            SetSliderDialogStartValue(SpellListMod.DailySpellList_PointsRequired_Apprentice.Value)
+        elseIf optionId == oid_SpellPoints_Adept
+            SetSliderDialogStartValue(SpellListMod.DailySpellList_PointsRequired_Adept.Value)
+        elseIf optionId == oid_SpellPoints_Expert
+            SetSliderDialogStartValue(SpellListMod.DailySpellList_PointsRequired_Expert.Value)
+        elseIf optionId == oid_SpellPoints_Master
+            SetSliderDialogStartValue(SpellListMod.DailySpellList_PointsRequired_Master.Value)
+        endIf
     endIf
 endEvent
 
 event OnOptionSliderAccept(int optionId, float value)
+    SetSliderOptionValue(optionId, value)
     if optionId == oid_MinimumHours
-        SetSliderOptionValue(oid_MinimumHours, value)
         SpellListMod.DailySpellList_MinHours.Value = value
+    elseIf optionId == oid_SpellPoints_Novice
+        SpellListMod.DailySpellList_PointsRequired_Novice.Value = value
+    elseIf optionId == oid_SpellPoints_Apprentice
+        SpellListMod.DailySpellList_PointsRequired_Apprentice.Value = value
+    elseIf optionId == oid_SpellPoints_Adept
+        SpellListMod.DailySpellList_PointsRequired_Adept.Value = value
+    elseIf optionId == oid_SpellPoints_Expert
+        SpellListMod.DailySpellList_PointsRequired_Expert.Value = value
+    elseIf optionId == oid_SpellPoints_Master
+        SpellListMod.DailySpellList_PointsRequired_Master.Value = value
+    elseIf optionId == oid_MinimumMagicka
+        SpellListMod.DailySpellList_MinSpellCastingMagicka.Value = value
+    elseIf optionId == oid_SpellPointsPerMagickaIncrease
+        SpellListMod.DailySpellList_PointsEarnedValue.Value = value
     endIf
 endEvent
 
@@ -110,17 +143,21 @@ event OnOptionSelect(int optionId)
         if SpellListMod.DailySpellList_SleepPrompt.Value > 0
             SpellListMod.DailySpellList_SleepPrompt.Value = 0
             SetToggleOptionValue(optionId, false)
+            SpellListMod.DailySpellList_PlayerReferenceAlias.StopListeningForSleep()
         else
             SpellListMod.DailySpellList_SleepPrompt.Value = 1
             SetToggleOptionValue(optionId, true)
+            SpellListMod.DailySpellList_PlayerReferenceAlias.ListenForSleep()
         endIf
     elseIf optionId == oid_PromptAfterWait
         if SpellListMod.DailySpellList_WaitPrompt.Value > 0
             SpellListMod.DailySpellList_WaitPrompt.Value = 0
             SetToggleOptionValue(optionId, false)
+            SpellListMod.DailySpellList_PlayerReferenceAlias.StopListeningForWait()
         else
             SpellListMod.DailySpellList_WaitPrompt.Value = 1
             SetToggleOptionValue(optionId, true)
+            SpellListMod.DailySpellList_PlayerReferenceAlias.ListenForWait()
         endIf
     elseIf optionId == oid_PromptAfterFastTravel
         if SpellListMod.DailySpellList_TravelPrompt.Value > 0
@@ -128,6 +165,14 @@ event OnOptionSelect(int optionId)
             SetToggleOptionValue(optionId, false)
         else
             SpellListMod.DailySpellList_TravelPrompt.Value = 1
+            SetToggleOptionValue(optionId, true)
+        endIf
+    elseIf optionId == oid_LevelUpDisplayInfo
+        if SpellListMod.DailySpellList_LevelUpDisplay.Value > 0
+            SpellListMod.DailySpellList_LevelUpDisplay.Value = 0
+            SetToggleOptionValue(optionId, false)
+        else
+            SpellListMod.DailySpellList_LevelUpDisplay.Value = 1
             SetToggleOptionValue(optionId, true)
         endIf
     endIf
