@@ -29,13 +29,13 @@ event OnPageReset(string page)
     SetCursorFillMode(TOP_TO_BOTTOM)
 
     AddHeaderOption("How long before spell list can be reset")
-    oid_MinimumHours = AddSliderOption("Minimum hours", 24)
+    oid_MinimumHours = AddSliderOption("Minimum hours", SpellListMod.DailySpellList_MinHours.Value as int)
     AddEmptyOption()
 
     AddHeaderOption("When to prompt for meditation")
-    oid_PromptAfterSleep = AddToggleOption("After sleeping (and minimum hours passed)", true)
-    oid_PromptAfterWait = AddToggleOption("After waiting (and minimum hours passed)", true)
-    oid_PromptAfterFastTravel = AddToggleOption("After fast travel (and minimum hours passed)", true)
+    oid_PromptAfterSleep = AddToggleOption("After sleeping (and minimum hours passed)", SpellListMod.DailySpellList_SleepPrompt.Value > 0)
+    oid_PromptAfterWait = AddToggleOption("After waiting (and minimum hours passed)", SpellListMod.DailySpellList_WaitPrompt.Value > 0)
+    oid_PromptAfterFastTravel = AddToggleOption("After fast travel (and minimum hours passed)", SpellListMod.DailySpellList_TravelPrompt.Value > 0)
     AddEmptyOption()
 
     AddHeaderOption("Spell Points Required Per Spell Level")
@@ -87,5 +87,48 @@ event OnOptionHighlight(int optionId)
         SetInfoText("Sets the number of spell points which are added for every 10x Magicka points")
     elseIf optionId == oid_SelectNoRestrictionSpells
         SetInfoText("Use to add spells which Daily Spell List ignores and will not be restricted")
+    endIf
+endEvent
+
+event OnOptionSliderOpen(int optionId)
+    if optionId == oid_MinimumHours
+        SetSliderDialogRange(0, 24 * 7)
+        SetSliderDialogStartValue(SpellListMod.DailySpellList_MinHours.Value)
+    endIf
+endEvent
+
+event OnOptionSliderAccept(int optionId, float value)
+    if optionId == oid_MinimumHours
+        SetSliderOptionValue(oid_MinimumHours, value)
+        SpellListMod.DailySpellList_MinHours.Value = value
+    endIf
+endEvent
+
+; Turn Event Listening on/off
+event OnOptionSelect(int optionId)
+    if optionId == oid_PromptAfterSleep
+        if SpellListMod.DailySpellList_SleepPrompt.Value > 0
+            SpellListMod.DailySpellList_SleepPrompt.Value = 0
+            SetToggleOptionValue(optionId, false)
+        else
+            SpellListMod.DailySpellList_SleepPrompt.Value = 1
+            SetToggleOptionValue(optionId, true)
+        endIf
+    elseIf optionId == oid_PromptAfterWait
+        if SpellListMod.DailySpellList_WaitPrompt.Value > 0
+            SpellListMod.DailySpellList_WaitPrompt.Value = 0
+            SetToggleOptionValue(optionId, false)
+        else
+            SpellListMod.DailySpellList_WaitPrompt.Value = 1
+            SetToggleOptionValue(optionId, true)
+        endIf
+    elseIf optionId == oid_PromptAfterFastTravel
+        if SpellListMod.DailySpellList_TravelPrompt.Value > 0
+            SpellListMod.DailySpellList_TravelPrompt.Value = 0
+            SetToggleOptionValue(optionId, false)
+        else
+            SpellListMod.DailySpellList_TravelPrompt.Value = 1
+            SetToggleOptionValue(optionId, true)
+        endIf
     endIf
 endEvent

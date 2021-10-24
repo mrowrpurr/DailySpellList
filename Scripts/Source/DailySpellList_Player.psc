@@ -48,6 +48,7 @@ endEvent
 
 event OnPlayerFastTravelEnd(float travelTime)
     if SpellListMod.DailySpellList_TravelPrompt.Value > 0 && SpellListMod.CanPrepareNewSpellList
+        Utility.Wait(1.0)
         SpellListMod.MeditateOnSpellList()
     endIf
 endEvent
