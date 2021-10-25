@@ -102,8 +102,21 @@ int function GetTotalHoursPassed()
     return ((GameDaysPassed.Value as int) * 24) + (GameHour.Value as int)
 endFunction
 
-function DisplayLevelUpInfo()
-    Debug.MessageBox("TODO")
+function DisplayLevelUpInfo(int magickaAdded)
+    int totalAvailablePoints = GetTotalAvailableSpellPoints()
+    if totalAvailablePoints > 0
+        string text = ""
+        int pointsPerTenAddedMagicka = DailySpellList_PointsEarnedValue.Value as int
+        int totalPointsAdded = (magickaAdded / 10) * pointsPerTenAddedMagicka
+        if totalPointsAdded == 1
+            text += "Added 1 spell point\n\n" + \
+                "You now have a total of " + totalAvailablePoints + " spell points"
+        else
+            text += "Added " + totalPointsAdded + " spell points\n\n" + \
+                "You now have a total of " + totalAvailablePoints + " spell points"
+        endIf
+        Debug.MessageBox(text)
+    endIf
 endFunction
 
 bool function DoesSpellCostPoints(Spell theSpell)

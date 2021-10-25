@@ -2,6 +2,8 @@ scriptName DailySpellList_Player extends ReferenceAlias
 
 DailySpellList property SpellListMod auto
 
+int CurrentPlayerMagicka
+
 event OnInit()
     SpellListMod = GetOwningQuest() as DailySpellList
     SpellListMod.DailySpellList_PlayerReferenceAlias = self
@@ -49,6 +51,10 @@ function ListenForLevelUp()
     endIf
 endFunction
 
+function StopListeningForLevelUp()
+    PO3_Events_Alias.UnregisterForLevelIncrease(self)
+endFunction
+
 event OnSleepStop(bool interrupted)
     if SpellListMod.DailySpellList_SleepPrompt.Value > 0 && SpellListMod.CanPrepareNewSpellList
         SpellListMod.MeditateOnSpellList()
@@ -65,6 +71,14 @@ endEvent
 event OnMenuClose(string menuName)
     if menuName == "Sleep/Wait Menu" && SpellListMod.DailySpellList_WaitPrompt.Value > 0 && SpellListMod.CanPrepareNewSpellList
         SpellListMod.MeditateOnSpellList()
+    elseIf menuName == "LevelUp Menu"
+        UnregisterForMenu("LevelUp Menu")
+        int newMagicka = GetActorReference().GetBaseActorValue("Magicka") as int
+        if newMagicka > CurrentPlayerMagicka
+            int totalMagickaAdded = newMagicka - CurrentPlayerMagicka
+            CurrentPlayerMagicka = newMagicka
+            SpellListMod.DisplayLevelUpInfo(totalMagickaAdded)
+        endIf
     endIf
 endEvent
 
@@ -74,7 +88,8 @@ endEvent
 
 event OnLevelIncrease(int theLevel)
     if SpellListMod.DailySpellList_LevelUpDisplay.Value > 0
-        SpellListMod.DisplayLevelUpInfo()
+        CurrentPlayerMagicka = GetActorReference().GetBaseActorValue("Magicka") as int
+        RegisterForMenu("LevelUp Menu")
     endIf
 endEvent
 
