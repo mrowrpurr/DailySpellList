@@ -10,7 +10,7 @@
     Package="true"
     Final="false">
     <Variables>
-        <Variable Name="ModName" Value="Daily Spell List" />
+        <Variable Name="ModName" Value="DailySpellList" />
         <Variable Name="ModsFolder" Value="C:\Users\mrowr\Dropbox\Skyrim\Mods" />
         <Variable Name="ImportsFolder" Value="C:\Users\mrowr\Dropbox\Skyrim\Imports" />
     </Variables>
