@@ -47,16 +47,17 @@ Perk property RestorationApprentice25 auto
 Perk property RestorationAdept50 auto
 Perk property RestorationExpert75 auto
 Perk property RestorationMaster100 auto
-Form[] UnpreparedSpells_Novice
-Form[] UnpreparedSpells_Apprentice
-Form[] UnpreparedSpells_Adept
-Form[] UnpreparedSpells_Expert
-Form[] UnpreparedSpells_Master
+Form[] property UnpreparedSpells_Novice auto
+Form[] property UnpreparedSpells_Apprentice auto
+Form[] property UnpreparedSpells_Adept auto
+Form[] property UnpreparedSpells_Expert auto
+Form[] property UnpreparedSpells_Master auto
 Form[] PreparedSpells_Novice
 Form[] PreparedSpells_Apprentice
 Form[] PreparedSpells_Adept
 Form[] PreparedSpells_Expert
 Form[] PreparedSpells_Master
+Form[] property UnrestrictedSpells auto
 
 bool HasPlayerMeditated
 bool PlayerSpellsLoaded
@@ -134,7 +135,7 @@ bool function DoesSpellCostPoints(Spell theSpell)
 endFunction
 
 bool function IsSpellWithoutRestriction(Spell theSpell)
-    ; TODO ;
+    return UnrestrictedSpells.Find(theSpell) > -1
 endFunction
 
 int function GetTotalAvailableSpellPoints()
@@ -223,6 +224,72 @@ function AddUnlearnedSpell(Spell theSpell)
     endIf
 endFunction
 
+Form[] function GetAllUnpreparedSpells()
+    Form[] theSpells
+
+    int i = 0
+    while i < UnpreparedSpells_Novice.Length
+        if theSpells
+            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
+            theSpells[theSpells.Length - 1] = UnpreparedSpells_Novice[i]
+        else
+            theSpells = new Form[1]
+            theSpells[0] = UnpreparedSpells_Novice[i]
+        endIf
+        i += 1
+    endWhile
+
+    i = 0
+    while i < UnpreparedSpells_Apprentice.Length
+        if theSpells
+            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
+            theSpells[theSpells.Length - 1] = UnpreparedSpells_Apprentice[i]
+        else
+            theSpells = new Form[1]
+            theSpells[0] = UnpreparedSpells_Apprentice[i]
+        endIf
+        i += 1
+    endWhile
+
+    i = 0
+    while i < UnpreparedSpells_Adept.Length
+        if theSpells
+            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
+            theSpells[theSpells.Length - 1] = UnpreparedSpells_Adept[i]
+        else
+            theSpells = new Form[1]
+            theSpells[0] = UnpreparedSpells_Adept[i]
+        endIf
+        i += 1
+    endWhile
+
+    i = 0
+    while i < UnpreparedSpells_Expert.Length
+        if theSpells
+            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
+            theSpells[theSpells.Length - 1] = UnpreparedSpells_Expert[i]
+        else
+            theSpells = new Form[1]
+            theSpells[0] = UnpreparedSpells_Expert[i]
+        endIf
+        i += 1
+    endWhile
+
+    i = 0
+    while i < UnpreparedSpells_Master.Length
+        if theSpells
+            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
+            theSpells[theSpells.Length - 1] = UnpreparedSpells_Master[i]
+        else
+            theSpells = new Form[1]
+            theSpells[0] = UnpreparedSpells_Master[i]
+        endIf
+        i += 1
+    endWhile
+    
+    return theSpells
+endFunction
+
 function LoadAllPlayerSpellsAsUnprepared()
     int spellCount = PlayerRef.GetSpellCount()
     int i = 0
@@ -271,12 +338,6 @@ bool function BeginMeditationPrompt()
     int totalAvailablePoints = GetTotalAvailableSpellPoints()
     string text = ""
     if totalAvailablePoints > 0
-        text += "\n\nTotal Spell Points: " + totalAvailablePoints
-        int totalUnusedPoints = totalAvailablePoints - SpellPointsUsed
-        if totalUnusedPoints
-            text += "\n\nAvailable Spell Points: " + totalUnusedPoints
-        endIf
-        SetMessageText(text)
         return DailySpellList_BeginMeditation.Show() == 0
     else
         Debug.MessageBox("You do not have any available spell points (required to meditate)")

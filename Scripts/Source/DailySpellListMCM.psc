@@ -21,6 +21,8 @@ int oid_SpellPointsPerMagickaIncrease
 
 int oid_SelectNoRestrictionSpells
 
+Form[] CurrentUnpreparedSpellList
+
 event OnConfigInit()
     ModName = "Daily Spell List"
 endEvent
@@ -177,3 +179,49 @@ event OnOptionSelect(int optionId)
         endIf
     endIf
 endEvent
+
+event OnOptionMenuOpen(int optionId)
+    if optionId == oid_SelectNoRestrictionSpells
+        CurrentUnpreparedSpellList = SpellListMod.GetAllUnpreparedSpells()
+        SetMenuDialogOptions(GetFormNamesAsArray(CurrentUnpreparedSpellList))
+    endIf
+endEvent
+
+event OnOptionMenuAccept(int optionId, int index)
+    if optionId == oid_SelectNoRestrictionSpells
+        Form theSpell = CurrentUnpreparedSpellList[index]
+        if SpellListMod.UnrestrictedSpells
+            SpellListMod.UnrestrictedSpells = Utility.ResizeFormArray(SpellListMod.UnrestrictedSpells, SpellListMod.UnrestrictedSpells.Length + 1)
+            SpellListMod.UnrestrictedSpells[SpellListMod.UnrestrictedSpells.Length - 1] = theSpell
+        else
+            SpellListMod.UnrestrictedSpells = new Form[1]
+            SpellListMod.UnrestrictedSpells[0] = theSpell
+        endIf
+        string spellLevel = SpellListMod.GetSpellLevel(theSpell as Spell)
+        if spellLevel == "Novice"
+            SpellListMod.UnpreparedSpells_Novice = SpellListMod.RemoveElement(SpellListMod.UnpreparedSpells_Novice, theSpell)
+        elseIf spellLevel == "Apprentice"
+            SpellListMod.UnpreparedSpells_Apprentice = SpellListMod.RemoveElement(SpellListMod.UnpreparedSpells_Apprentice, theSpell)
+        elseIf spellLevel == "Adept"
+            SpellListMod.UnpreparedSpells_Adept = SpellListMod.RemoveElement(SpellListMod.UnpreparedSpells_Adept, theSpell)
+        elseIf spellLevel == "Expert"
+            SpellListMod.UnpreparedSpells_Expert = SpellListMod.RemoveElement(SpellListMod.UnpreparedSpells_Expert, theSpell)
+        elseIf spellLevel == "Master"
+            SpellListMod.UnpreparedSpells_Master = SpellListMod.RemoveElement(SpellListMod.UnpreparedSpells_Master, theSpell)
+        endIf
+        if ! SpellListMod.PlayerRef.HasSpell(theSpell as Spell)
+            SpellListMod.PlayerRef.AddSpell(theSpell as Spell, abVerbose = false)
+        endIf
+    endIf
+endEvent
+
+string[] function GetFormNamesAsArray(Form[] theArray)
+    string[] names = Utility.CreateStringArray(theArray.Length)
+    int i = 0
+    while i < names.Length
+        names[i] = theArray[i].GetName()
+        i += 1
+    endWhile
+    return names
+endFunction
+
