@@ -198,7 +198,9 @@ event OnOptionSelect(int optionId)
             Form theSpell = SpellListMod.UnrestrictedSpells[unrestrictedOptionIdIndex - 1]
             if ShowMessage("Are you sure you would like to remove " + theSpell.GetName() + " as an unrestricted spell?")
                 SpellListMod.UnrestrictedSpells = SpellListMod.RemoveElement(SpellListMod.UnrestrictedSpells, theSpell)
-                SpellListMod.AddUnlearnedSpell(theSpell as Spell)
+                if SpellListMod.PlayerRef.HasSpell(theSpell as Spell)
+                    SpellListMod.AddUnlearnedSpell(theSpell as Spell)
+                endIf
                 ForcePageReset()
             endIf
         endIf

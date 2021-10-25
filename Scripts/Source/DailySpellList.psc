@@ -60,8 +60,7 @@ Form[] PreparedSpells_Expert
 Form[] PreparedSpells_Master
 Form[] property UnrestrictedSpells auto
 Form property DailySpellList_MessageText_BaseForm auto
-Spell property Flames auto
-Spell property Healing auto
+Spell property Candlelight auto
 
 bool HasPlayerMeditated
 bool PlayerSpellsLoaded
@@ -71,6 +70,8 @@ EquipSlot VoiceEquipSlot
 
 event OnInit()
     VoiceEquipSlot = Game.GetForm(0x25bee) as EquipSlot
+    UnrestrictedSpells = new Form[1]
+    UnrestrictedSpells[0] = Candlelight
     LoadAllPlayerSpellsAsUnprepared()
 endEvent
 
