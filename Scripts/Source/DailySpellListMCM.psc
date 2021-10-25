@@ -2,35 +2,43 @@ scriptName DailySpellListMCM extends SKI_ConfigBase
 
 DailySpellList property SpellListMod auto
 
-int oid_MinimumHours
-
-int oid_PromptAfterSleep
-int oid_PromptAfterWait
-int oid_PromptAfterFastTravel
-
-int oid_SpellPoints_Novice
-int oid_SpellPoints_Apprentice
-int oid_SpellPoints_Adept
-int oid_SpellPoints_Expert
-int oid_SpellPoints_Master
-
-int oid_LevelUpDisplayInfo
-
-int oid_MinimumMagicka
-int oid_SpellPointsPerMagickaIncrease
-int oid_MagickaIncreaseSize
-
-int oid_SelectNoRestrictionSpells
-
-Form[] CurrentUnpreparedSpellList
-
-int[] UnrestrictedSpellOptionIDs
+int property oid_MinimumHours auto
+int property oid_PromptAfterSleep auto
+int property oid_PromptAfterWait auto
+int property oid_PromptAfterFastTravel auto
+int property oid_SpellPoints_Novice auto
+int property oid_SpellPoints_Apprentice auto
+int property oid_SpellPoints_Adept auto
+int property oid_SpellPoints_Expert auto
+int property oid_SpellPoints_Master auto
+int property oid_LevelUpDisplayInfo auto
+int property oid_MinimumMagicka auto
+int property oid_SpellPointsPerMagickaIncrease auto
+int property oid_MagickaIncreaseSize auto
+int property oid_SelectNoRestrictionSpells auto
+int property oid_SelectCustomRestrictionSpells auto
+Form[] property CurrentUnpreparedSpellList auto
+Form[] property CurrentUnmanagedSpellList auto
+Form[] property CustomRestrictedSpells auto
+int[] property UnrestrictedSpellOptionIDs auto
+int[] property CustomRestrictedSpellOptionIDs auto
 
 event OnConfigInit()
     ModName = "Daily Spell List"
+    Pages = new string[2]
+    Pages[0] = "Settings"
+    Pages[1] = "Spell Restrictions"
 endEvent
 
 event OnPageReset(string page)
+    if page == "Spell Restrictions"
+        DailySpellListMCM_SpellRestrictions.Render(self)
+    else
+        RenderSettingsPage()
+    endIf
+endEvent
+
+function RenderSettingsPage()
     UnrestrictedSpellOptionIDs = new int[1]
 
     SetCursorFillMode(TOP_TO_BOTTOM)
@@ -60,26 +68,10 @@ event OnPageReset(string page)
 
     AddHeaderOption("Spell Point Magicka Requirements")
     oid_MinimumMagicka = AddSliderOption("Minimum Magicka required to cast spells", SpellListMod.DailySpellList_MinSpellCastingMagicka.Value)
-    oid_SpellPointsPerMagickaIncrease = AddSliderOption("Spell Points obtained per Magicka increase", SpellListMod.DailySpellList_PointsEarnedValue.Value)
     oid_MagickaIncreaseSize = AddSliderOption("Magicka points which count as an increase", SpellListMod.DailySpellList_PointsEarnedInterval.Value)
+    oid_SpellPointsPerMagickaIncrease = AddSliderOption("Spell Points obtained per Magicka increase", SpellListMod.DailySpellList_PointsEarnedValue.Value)
     AddEmptyOption()
-
-    AddHeaderOption("Spells that can be cast without restriction")
-    oid_SelectNoRestrictionSpells = AddMenuOption("Select spells", "CHOOSE SPELL")
-
-    int i = 0
-    while i < SpellListMod.UnrestrictedSpells.Length && i < (64 - 9) ; Right column has 64 items, minus the 9 used
-        int oid = AddTextOption("", SpellListMod.UnrestrictedSpells[i].GetName())
-        if UnrestrictedSpellOptionIDs
-            UnrestrictedSpellOptionIDs = Utility.ResizeIntArray(UnrestrictedSpellOptionIDs, UnrestrictedSpellOptionIDs.Length + 1)
-            UnrestrictedSpellOptionIDs[UnrestrictedSpellOptionIDs.Length - 1] = oid
-        else
-            UnrestrictedSpellOptionIDs = new int[1]
-            UnrestrictedSpellOptionIDs[0] = oid
-        endIf
-        i += 1
-    endWhile
-endEvent
+endFunction
 
 event OnOptionHighlight(int optionId)
     if optionId == oid_MinimumHours
@@ -220,6 +212,9 @@ event OnOptionMenuOpen(int optionId)
     if optionId == oid_SelectNoRestrictionSpells
         CurrentUnpreparedSpellList = SpellListMod.GetAllUnpreparedSpells()
         SetMenuDialogOptions(GetFormNamesAsArray(CurrentUnpreparedSpellList))
+    elseIf optionId == oid_SelectCustomRestrictionSpells
+        CurrentUnmanagedSpellList = SpellListMod.GetPlayerUnmanagedSpells()
+        SetMenuDialogOptions(GetFormNamesAsArray(CurrentUnmanagedSpellList))
     endIf
 endEvent
 
@@ -251,6 +246,15 @@ event OnOptionMenuAccept(int optionId, int index)
         if ! SpellListMod.PlayerRef.HasSpell(theSpell as Spell)
             SpellListMod.PlayerRef.AddSpell(theSpell as Spell, abVerbose = false)
         endIf
+        ForcePageReset()
+    elseIf optionId == oid_SelectCustomRestrictionSpells
+        Form theSpell = CurrentUnmanagedSpellList[index]
+        CustomRestrictedSpells = SpellListMod.AddElement(CustomRestrictedSpells, theSpell)
+        string levelFromPerk = SpellListMod.GetSpellPerkLevel((theSpell as Spell).GetPerk())
+        if ! levelFromPerk
+            levelFromPerk = "Novice"
+        endIf
+        SpellListMod.AddUnlearnedSpell(theSpell as Spell, force = true, level = levelFromPerk)
         ForcePageReset()
     endIf
 endEvent

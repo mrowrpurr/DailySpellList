@@ -60,7 +60,6 @@ Form[] PreparedSpells_Expert
 Form[] PreparedSpells_Master
 Form[] property UnrestrictedSpells auto
 Form property DailySpellList_MessageText_BaseForm auto
-Spell property Candlelight auto
 
 bool HasPlayerMeditated
 bool PlayerSpellsLoaded
@@ -70,8 +69,6 @@ EquipSlot VoiceEquipSlot
 
 event OnInit()
     VoiceEquipSlot = Game.GetForm(0x25bee) as EquipSlot
-    UnrestrictedSpells = new Form[1]
-    UnrestrictedSpells[0] = Candlelight
     LoadAllPlayerSpellsAsUnprepared()
 endEvent
 
@@ -149,6 +146,42 @@ bool function PlayerHasAnyPreparedSpells()
            PreparedSpells_Master.Length     > 0
 endFunction
 
+Form[] function GetPlayerUnmanagedSpells()
+    Form[] unmanagedSpells
+
+    int spellCount = PlayerRef.GetSpellCount()
+    int i = 0
+    while i < spellCount
+        Spell theSpell = PlayerRef.GetNthSpell(i)
+        if ! IsSpellTrackedAsPreparedOrUnprepared(theSpell)
+            if unmanagedSpells
+                unmanagedSpells = Utility.ResizeFormArray(unmanagedSpells, unmanagedSpells.Length + 1)
+                unmanagedSpells[unmanagedSpells.Length - 1] = theSpell
+            else
+                unmanagedSpells = new Form[1]
+                unmanagedSpells[0] = theSpell
+            endIf
+        endIf
+        i += 1
+    endWhile
+
+    return unmanagedSpells
+endFunction
+
+bool function IsSpellTrackedAsPreparedOrUnprepared(Spell theSpell)
+    return UnpreparedSpells_Novice.Find(theSpell)     > -1 || \
+           UnpreparedSpells_Apprentice.Find(theSpell) > -1 || \
+           UnpreparedSpells_Adept.Find(theSpell)      > -1 || \
+           UnpreparedSpells_Expert.Find(theSpell)     > -1 || \
+           UnpreparedSpells_Master.Find(theSpell)     > -1 || \
+           PreparedSpells_Novice.Find(theSpell)       > -1 || \
+           PreparedSpells_Apprentice.Find(theSpell)   > -1 || \
+           PreparedSpells_Adept.Find(theSpell)        > -1 || \
+           PreparedSpells_Expert.Find(theSpell)       > -1 || \
+           PreparedSpells_Master.Find(theSpell)       > -1 || \
+           UnrestrictedSpells.Find(theSpell)          > -1
+endFunction
+
 bool function IsSpellWithoutRestriction(Spell theSpell)
     return UnrestrictedSpells.Find(theSpell) > -1
 endFunction
@@ -173,9 +206,14 @@ int function GetCurrentRemainingSpellPoints()
     return GetTotalAvailableSpellPoints() - SpellPointsUsed
 endFunction
 
-function AddUnlearnedSpell(Spell theSpell)
-    if DoesSpellCostPoints(theSpell)
-        string level = GetSpellLevel(theSpell)
+function AddUnlearnedSpell(Spell theSpell, bool force = false, string level = "")
+    if force || DoesSpellCostPoints(theSpell)
+        if ! level
+            level = GetSpellLevel(theSpell)
+        endIf
+        if ! level
+            return
+        endIf
 
         if level == "Novice"
             if UnpreparedSpells_Novice.Find(theSpell) == -1 && PreparedSpells_Novice.Find(theSpell) == -1 
@@ -188,6 +226,7 @@ function AddUnlearnedSpell(Spell theSpell)
                     UnpreparedSpells_Novice[UnpreparedSpells_Novice.Length - 1] = theSpell
                 endIf
             endIf
+
         elseIf level == "Apprentice"
             if UnpreparedSpells_Apprentice.Find(theSpell) == -1 && PreparedSpells_Apprentice.Find(theSpell) == -1 
                 PlayerRef.RemoveSpell(theSpell)
@@ -374,7 +413,25 @@ function MeditateOnSpellList(bool castUsingSpell = false)
 endFunction
 
 string function GetSpellLevel(Spell theSpell)
-    Perk thePerk = theSpell.GetPerk()
+    Perk spellPerk = theSpell.GetPerk()
+    if spellPerk
+        return GetSpellPerkLevel(spellPerk)
+    else
+        if UnpreparedSpells_Novice.Find(theSpell) > -1 || PreparedSpells_Novice.Find(theSpell) > -1
+            return "Novice"
+        elseIf UnpreparedSpells_Apprentice.Find(theSpell) > -1 || PreparedSpells_Apprentice.Find(theSpell) > -1
+            return "Apprentice"
+        elseIf UnpreparedSpells_Adept.Find(theSpell) > -1 || PreparedSpells_Adept.Find(theSpell) > -1
+            return "Adept"
+        elseIf UnpreparedSpells_Expert.Find(theSpell) > -1 || PreparedSpells_Expert.Find(theSpell) > -1
+            return "Expert"
+        elseIf UnpreparedSpells_Master.Find(theSpell) > -1 || PreparedSpells_Master.Find(theSpell) > -1
+            return "Master"
+        endIf
+    endIf
+endFunction
+
+string function GetSpellPerkLevel(Perk thePerk)
     if thePerk == AlterationNovice00 || thePerk == ConjurationNovice00 || thePerk == DestructionNovice00 || thePerk == IllusionNovice00 || thePerk == RestorationNovice00
         return "Novice"
     elseIf thePerk == AlterationApprentice25 || thePerk == ConjurationApprentice25 || thePerk == DestructionApprentice25 || thePerk == IllusionApprentice25 || thePerk == RestorationApprentice25
@@ -469,15 +526,15 @@ endFunction
 
 int function GetPointsRequiredForSpell(Spell theSpell)
     string level = GetSpellLevel(theSpell)
-    if level == "Novice"
+    if level == "Novice" || UnpreparedSpells_Novice.Find(theSpell) > -1 || PreparedSpells_Novice.Find(theSpell) > -1
         return DailySpellList_PointsRequired_Novice.Value as int
-    elseIf level == "Apprentice"
+    elseIf level == "Apprentice" || UnpreparedSpells_Apprentice.Find(theSpell) > -1 || PreparedSpells_Apprentice.Find(theSpell) > -1
         return DailySpellList_PointsRequired_Apprentice.Value as int
-    elseIf level == "Adept"
+    elseIf level == "Adept" || UnpreparedSpells_Adept.Find(theSpell) > -1 || PreparedSpells_Adept.Find(theSpell) > -1
         return DailySpellList_PointsRequired_Adept.Value as int
-    elseIf level == "Expert"
+    elseIf level == "Expert" || UnpreparedSpells_Expert.Find(theSpell) > -1 || PreparedSpells_Expert.Find(theSpell) > -1
         return DailySpellList_PointsRequired_Expert.Value as int
-    elseIf level == "Master"
+    elseIf level == "Master" || UnpreparedSpells_Master.Find(theSpell) > -1 || PreparedSpells_Master.Find(theSpell) > -1
         return DailySpellList_PointsRequired_Master.Value as int
     endIf
 endFunction
