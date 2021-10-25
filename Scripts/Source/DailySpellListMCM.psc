@@ -161,7 +161,6 @@ event OnOptionSelect(int optionId)
         if SpellListMod.DailySpellList_SleepPrompt.Value > 0
             SpellListMod.DailySpellList_SleepPrompt.Value = 0
             SetToggleOptionValue(optionId, false)
-            SpellListMod.DailySpellList_PlayerReferenceAlias.StopListeningForSleep()
         else
             SpellListMod.DailySpellList_SleepPrompt.Value = 1
             SetToggleOptionValue(optionId, true)

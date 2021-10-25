@@ -2,7 +2,8 @@ scriptName DailySpellList_Player extends ReferenceAlias
 
 DailySpellList property SpellListMod auto
 
-int CurrentPlayerMagicka
+int  CurrentPlayerMagicka
+bool JustFinishedSleeping
 
 event OnInit()
     SpellListMod = GetOwningQuest() as DailySpellList
@@ -25,10 +26,6 @@ function ListenForSleep()
     if SpellListMod.DailySpellList_SleepPrompt.Value > 0
         RegisterForSleep()
     endIf
-endFunction
-
-function StopListeningForSleep()
-    UnregisterForSleep()
 endFunction
 
 function ListenForWait()
@@ -56,6 +53,7 @@ function StopListeningForLevelUp()
 endFunction
 
 event OnSleepStop(bool interrupted)
+    JustFinishedSleeping = true
     if SpellListMod.DailySpellList_SleepPrompt.Value > 0 && SpellListMod.CanPrepareNewSpellList
         SpellListMod.MeditateOnSpellList()
     endIf
@@ -70,7 +68,10 @@ endEvent
 
 event OnMenuClose(string menuName)
     if menuName == "Sleep/Wait Menu" && SpellListMod.DailySpellList_WaitPrompt.Value > 0 && SpellListMod.CanPrepareNewSpellList
-        SpellListMod.MeditateOnSpellList()
+        if ! JustFinishedSleeping
+            SpellListMod.MeditateOnSpellList()
+        endIf
+        JustFinishedSleeping = false
     elseIf menuName == "LevelUp Menu"
         UnregisterForMenu("LevelUp Menu")
         int newMagicka = GetActorReference().GetBaseActorValue("Magicka") as int
