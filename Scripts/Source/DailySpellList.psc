@@ -21,6 +21,7 @@ int property DailySpellList_PointsEarnedInterval = 10 autoReadonly
 Message property DailySpellList_BeginMeditation auto
 Message property DailySpellList_EndMeditation auto
 Message property DailySpellList_NotEnoughPoints auto
+Form property DailySpellList_MessageText_BaseForm auto
 Perk property AlterationNovice00 auto
 Perk property AlterationApprentice25 auto
 Perk property AlterationAdept50 auto
@@ -267,7 +268,19 @@ function MeditateOnSpellList()
 endFunction
 
 bool function BeginMeditationPrompt()
-    return DailySpellList_BeginMeditation.Show() == 0
+    int totalAvailablePoints = GetTotalAvailableSpellPoints()
+    string text = ""
+    if totalAvailablePoints > 0
+        text += "\n\nTotal Spell Points: " + totalAvailablePoints
+        int totalUnusedPoints = totalAvailablePoints - SpellPointsUsed
+        if totalUnusedPoints
+            text += "\n\nAvailable Spell Points: " + totalUnusedPoints
+        endIf
+        SetMessageText(text)
+        return DailySpellList_BeginMeditation.Show() == 0
+    else
+        Debug.MessageBox("You do not have any available spell points (required to meditate)")
+    endIf
 endFunction
 
 bool function EndMeditationPrompt()
@@ -543,4 +556,8 @@ string function GetUserInput(string defaultText = "")
     endIf
     textEntry.OpenMenu()
     return textEntry.GetResultString()
+endFunction
+
+function SetMessageText(string text)
+    DailySpellList_MessageText_BaseForm.SetName(text)
 endFunction
