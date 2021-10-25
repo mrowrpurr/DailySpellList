@@ -6,8 +6,8 @@
     Output="Scripts" 
     Optimize="false" 
     Release="false" 
-    Zip="true"
-    Package="true"
+    Zip="false"
+    Package="false"
     Final="false">
     <Variables>
         <Variable Name="ModName" Value="DailySpellList" />

@@ -60,6 +60,8 @@ Form[] PreparedSpells_Expert
 Form[] PreparedSpells_Master
 Form[] property UnrestrictedSpells auto
 Form property DailySpellList_MessageText_BaseForm auto
+Spell property Flames auto
+Spell property Healing auto
 
 bool HasPlayerMeditated
 bool PlayerSpellsLoaded
@@ -67,16 +69,7 @@ int  SpellPointsUsed
 bool IsCurrentlyMeditating
 EquipSlot VoiceEquipSlot
 
-function AddTestSpells()
-    PlayerRef.AddSpell(Game.GetForm(0x7e8e5) as Spell)
-    PlayerRef.AddSpell(Game.GetForm(0x35d7f) as Spell)
-    PlayerRef.AddSpell(Game.GetForm(0x45f9c) as Spell)
-    PlayerRef.AddSpell(Game.GetForm(0x2dd29) as Spell)
-    PlayerRef.AddSpell(Game.GetForm(0x2b96b) as Spell)
-endFunction
-
 event OnInit()
-    AddTestSpells()
     VoiceEquipSlot = Game.GetForm(0x25bee) as EquipSlot
     LoadAllPlayerSpellsAsUnprepared()
 endEvent
@@ -506,6 +499,10 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
         elseif result == cancelMeditation
             return
         endIf
+    elseIf selection == 0 ; Header
+        ShowSpellSelectionList(filter = "", readonly = readonly)
+    elseIf selection == 1 ; Points Available Line
+        ShowSpellSelectionList(filter = "", readonly = readonly)
     else
         int currentIndex = 2 ; The two header lines in the list of prepared
 
@@ -568,6 +565,11 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
             return
         endIf
         currentIndex += PreparedSpells_Master.Length
+
+        if selection == currentIndex || selection == currentIndex + 1 ; This is the empty space or the Unprepared header
+            ShowSpellSelectionList(filter = "", readonly = readonly)
+            return
+        endIf
 
         currentIndex += 2 ; The header and empty space in the list for unprepared
 
