@@ -488,6 +488,9 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
     int selection = list.GetResultInt()
 
     if selection == -1
+        if readonly
+            return
+        endIf
         int yesEndMeditation = 0
         int noDontEndMeditation = 1
         int cancelMeditation = 2
@@ -498,7 +501,7 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
             DailySpellList_LastMeditationHour.Value = GetTotalHoursPassed()   
             return        
         elseIf result == noDontEndMeditation
-            ShowSpellSelectionList()
+            ShowSpellSelectionList(readonly = readonly)
             return
         elseif result == cancelMeditation
             return
@@ -506,7 +509,7 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
     else
         int currentIndex = 2 ; The two header lines in the list of prepared
 
-        if selection < (currentIndex + PreparedSpells_Novice.Length)
+        if ! readonly && selection < (currentIndex + PreparedSpells_Novice.Length)
             Spell theSpell = PreparedSpells_Novice[selection - currentIndex] as Spell
             PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Novice = AddElement(UnpreparedSpells_Novice, theSpell)
@@ -518,7 +521,7 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
         endIf
         currentIndex += PreparedSpells_Novice.Length
 
-        if selection < (currentIndex + PreparedSpells_Apprentice.Length)
+        if ! readonly && selection < (currentIndex + PreparedSpells_Apprentice.Length)
             Spell theSpell = PreparedSpells_Apprentice[selection - currentIndex] as Spell
             PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Apprentice = AddElement(UnpreparedSpells_Apprentice, theSpell)
@@ -530,7 +533,7 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
         endIf
         currentIndex += PreparedSpells_Apprentice.Length
 
-        if selection < (currentIndex + PreparedSpells_Adept.Length)
+        if ! readonly && selection < (currentIndex + PreparedSpells_Adept.Length)
             Spell theSpell = PreparedSpells_Adept[selection - currentIndex] as Spell
             PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Adept = AddElement(UnpreparedSpells_Adept, theSpell)
@@ -542,7 +545,7 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
         endIf
         currentIndex += PreparedSpells_Adept.Length
 
-        if selection < (currentIndex + PreparedSpells_Expert.Length)
+        if ! readonly && selection < (currentIndex + PreparedSpells_Expert.Length)
             Spell theSpell = PreparedSpells_Expert[selection - currentIndex] as Spell
             PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Expert = AddElement(UnpreparedSpells_Expert, theSpell)
@@ -554,7 +557,7 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
         endIf
         currentIndex += PreparedSpells_Expert.Length
 
-        if selection < (currentIndex + PreparedSpells_Master.Length)
+        if ! readonly && selection < (currentIndex + PreparedSpells_Master.Length)
             Spell theSpell = PreparedSpells_Master[selection - currentIndex] as Spell
             PlayerRef.RemoveSpell(theSpell)
             UnpreparedSpells_Master = AddElement(UnpreparedSpells_Master, theSpell)
@@ -572,9 +575,9 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
         if selection == currentIndex
             string query = GetUserInput()
             if query
-                ShowSpellSelectionList(query)
+                ShowSpellSelectionList(query, readonly = readonly)
             else
-                ShowSpellSelectionList()
+                ShowSpellSelectionList(readonly = readonly)
             endIf
             return
         endIf
@@ -584,6 +587,10 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
         int availablePoints = GetTotalAvailableSpellPoints()
         Spell theSpell      = AllDisplayedUnpreparedSpells[selection - currentIndex] as Spell
         string spellLevel   = GetSpellLevel(theSpell)
+
+        if readonly
+            return
+        endIf
 
         if availablePoints >= GetPointsRequiredForSpell(theSpell)
             PlayerRef.AddSpell(theSpell, abVerbose = false)
@@ -601,7 +608,7 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
             UnpreparedSpells_Master = TryToPrepareSpellAndReturnNewArray(theSpell, UnpreparedSpells_Master)
         endIf
 
-        ShowSpellSelectionList()
+        ShowSpellSelectionList(readonly = readonly)
         return
     endIf
 endFunction
