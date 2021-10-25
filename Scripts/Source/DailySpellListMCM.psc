@@ -214,6 +214,9 @@ event OnOptionMenuOpen(int optionId)
 endEvent
 
 event OnOptionMenuAccept(int optionId, int index)
+    if index == -1
+        return
+    endIf
     if optionId == oid_SelectNoRestrictionSpells
         Form theSpell = CurrentUnpreparedSpellList[index]
         if SpellListMod.UnrestrictedSpells
