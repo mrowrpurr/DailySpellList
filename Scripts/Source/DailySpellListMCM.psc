@@ -23,11 +23,15 @@ int oid_SelectNoRestrictionSpells
 
 Form[] CurrentUnpreparedSpellList
 
+int[] UnrestrictedSpellOptionIDs
+
 event OnConfigInit()
     ModName = "Daily Spell List"
 endEvent
 
 event OnPageReset(string page)
+    UnrestrictedSpellOptionIDs = new int[1]
+
     SetCursorFillMode(TOP_TO_BOTTOM)
 
     AddHeaderOption("How long before spell list can be reset")
@@ -60,6 +64,19 @@ event OnPageReset(string page)
 
     AddHeaderOption("Spells that can be cast without restriction")
     oid_SelectNoRestrictionSpells = AddMenuOption("Select spells", "CHOOSE SPELL")
+
+    int i = 0
+    while i < SpellListMod.UnrestrictedSpells.Length && i < (64 - 9) ; Right column has 64 items, minus the 9 used
+        int oid = AddTextOption("", SpellListMod.UnrestrictedSpells[i].GetName())
+        if UnrestrictedSpellOptionIDs
+            UnrestrictedSpellOptionIDs = Utility.ResizeIntArray(UnrestrictedSpellOptionIDs, UnrestrictedSpellOptionIDs.Length + 1)
+            UnrestrictedSpellOptionIDs[UnrestrictedSpellOptionIDs.Length - 1] = oid
+        else
+            UnrestrictedSpellOptionIDs = new int[1]
+            UnrestrictedSpellOptionIDs[0] = oid
+        endIf
+        i += 1
+    endWhile
 endEvent
 
 event OnOptionHighlight(int optionId)
@@ -139,7 +156,6 @@ event OnOptionSliderAccept(int optionId, float value)
     endIf
 endEvent
 
-; Turn Event Listening on/off
 event OnOptionSelect(int optionId)
     if optionId == oid_PromptAfterSleep
         if SpellListMod.DailySpellList_SleepPrompt.Value > 0
@@ -177,6 +193,16 @@ event OnOptionSelect(int optionId)
             SpellListMod.DailySpellList_LevelUpDisplay.Value = 1
             SetToggleOptionValue(optionId, true)
         endIf
+    else
+        int unrestrictedOptionIdIndex = UnrestrictedSpellOptionIDs.Find(optionId)
+        if unrestrictedOptionIdIndex > -1
+            Form theSpell = SpellListMod.UnrestrictedSpells[unrestrictedOptionIdIndex - 1]
+            if ShowMessage("Are you sure you would like to remove " + theSpell.GetName() + " as an unrestricted spell?")
+                SpellListMod.UnrestrictedSpells = SpellListMod.RemoveElement(SpellListMod.UnrestrictedSpells, theSpell)
+                SpellListMod.AddUnlearnedSpell(theSpell as Spell)
+                ForcePageReset()
+            endIf
+        endIf
     endIf
 endEvent
 
@@ -212,6 +238,7 @@ event OnOptionMenuAccept(int optionId, int index)
         if ! SpellListMod.PlayerRef.HasSpell(theSpell as Spell)
             SpellListMod.PlayerRef.AddSpell(theSpell as Spell, abVerbose = false)
         endIf
+        ForcePageReset()
     endIf
 endEvent
 
