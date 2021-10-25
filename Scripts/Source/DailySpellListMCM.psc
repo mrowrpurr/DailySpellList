@@ -18,6 +18,7 @@ int oid_LevelUpDisplayInfo
 
 int oid_MinimumMagicka
 int oid_SpellPointsPerMagickaIncrease
+int oid_MagickaIncreaseSize
 
 int oid_SelectNoRestrictionSpells
 
@@ -60,6 +61,7 @@ event OnPageReset(string page)
     AddHeaderOption("Spell Point Magicka Requirements")
     oid_MinimumMagicka = AddSliderOption("Minimum Magicka required to cast spells", SpellListMod.DailySpellList_MinSpellCastingMagicka.Value)
     oid_SpellPointsPerMagickaIncrease = AddSliderOption("Spell Points obtained per Magicka increase", SpellListMod.DailySpellList_PointsEarnedValue.Value)
+    oid_MagickaIncreaseSize = AddSliderOption("Points of Magicka which count as an increase", SpellListMod.DailySpellList_PointsEarnedInterval.Value)
     AddEmptyOption()
 
     AddHeaderOption("Spells that can be cast without restriction")
@@ -103,9 +105,11 @@ event OnOptionHighlight(int optionId)
     elseIf optionId == oid_MinimumMagicka
         SetInfoText("The minimum amount of Magicka required to be eligible for gaining spell points. For example: by default, this is 90. This means that you have 1 spell point once your Magicka is 100. You may want to adjust this if you configure your starting character to have less than 100 starting Magicka.")
     elseIf optionId == oid_SpellPointsPerMagickaIncrease
-        SetInfoText("Sets the number of spell points which are added for every 10x Magicka points")
+        SetInfoText("Sets the number of spell points which are added for every Magicka increase")
     elseIf optionId == oid_SelectNoRestrictionSpells
         SetInfoText("Use to add spells which Daily Spell List ignores and will not be restricted")
+    elseIf optionId == oid_MagickaIncreaseSize
+        SetInfoText("Sets the amount of Magicka which count as an increase in Magicka and result in more spell points being added. Provided for mods which increase Magicka in increments other than 10.")
     endIf
 endEvent
 
@@ -119,6 +123,9 @@ event OnOptionSliderOpen(int optionId)
     elseIf optionId == oid_SpellPointsPerMagickaIncrease
         SetSliderDialogRange(1, 100)
         SetSliderDialogStartValue(SpellListMod.DailySpellList_PointsEarnedValue.Value)
+    elseIf optionId == oid_MagickaIncreaseSize
+        SetSliderDialogRange(1, 100)
+        SetSliderDialogStartValue(SpellListMod.DailySpellList_PointsEarnedInterval.Value)
     else
         SetSliderDialogRange(0, 100)
         if optionId == oid_SpellPoints_Novice
@@ -153,6 +160,8 @@ event OnOptionSliderAccept(int optionId, float value)
         SpellListMod.DailySpellList_MinSpellCastingMagicka.Value = value
     elseIf optionId == oid_SpellPointsPerMagickaIncrease
         SpellListMod.DailySpellList_PointsEarnedValue.Value = value
+    elseIf optionId == oid_MagickaIncreaseSize
+        SpellListMod.DailySpellList_PointsEarnedInterval.Value = value
     endIf
 endEvent
 

@@ -3,7 +3,7 @@ scriptName DailySpellList_Player extends ReferenceAlias
 DailySpellList property SpellListMod auto
 
 int  CurrentPlayerMagicka
-bool JustFinishedSleeping
+bool JustFinishedSleeping = false
 
 event OnInit()
     SpellListMod = GetOwningQuest() as DailySpellList

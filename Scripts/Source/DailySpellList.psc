@@ -13,13 +13,13 @@ GlobalVariable property DailySpellList_PointsRequired_Apprentice auto
 GlobalVariable property DailySpellList_PointsRequired_Adept auto
 GlobalVariable property DailySpellList_PointsRequired_Expert auto
 GlobalVariable property DailySpellList_PointsRequired_Master auto
+GlobalVariable property DailySpellList_PointsEarnedInterval auto
 GlobalVariable property DailySpellList_PointsEarnedValue auto
 GlobalVariable property DailySpellList_MinSpellCastingMagicka auto
 GlobalVariable property DailySpellList_CanCancelMeditation auto
 GlobalVariable property DailySpellList_CanBeginMeditation auto
 GlobalVariable property GameDaysPassed auto
 GlobalVariable property GameHour auto
-int property DailySpellList_PointsEarnedInterval = 10 autoReadonly
 Message property DailySpellList_BeginMeditation auto
 Message property DailySpellList_EndMeditation auto
 Message property DailySpellList_NotEnoughPoints auto
@@ -77,6 +77,9 @@ endEvent
 
 bool property CanPrepareNewSpellList
     bool function get()
+        if ! HasPlayerMeditated
+            return true
+        endIf
         int currentGameHoursPassed = GetTotalHoursPassed()
         int lastMeditationGameTime = DailySpellList_LastMeditationHour.Value as int
         int minimumHoursRequired   = DailySpellList_MinHours.Value as int
@@ -130,17 +133,12 @@ bool function DoesSpellCostPoints(Spell theSpell)
     return true
 endFunction
 
-bool function PlayerHasAnySpellsWhichCostPoints()
-    int spellCount = PlayerRef.GetSpellCount()
-    int i = 0
-    while i < spellCount
-        Spell theSpell = PlayerRef.GetNthSpell(i)
-        if DoesSpellCostPoints(theSpell)
-            return true
-        endIf
-        i += 1
-    endWhile
-    return false
+bool function PlayerHasAnyUnpreparedSpells()
+    return UnpreparedSpells_Novice.Length     > 0 || \
+           UnpreparedSpells_Apprentice.Length > 0 || \
+           UnpreparedSpells_Adept.Length      > 0 || \
+           UnpreparedSpells_Expert.Length     > 0 || \
+           UnpreparedSpells_Master.Length     > 0
 endFunction
 
 bool function IsSpellWithoutRestriction(Spell theSpell)
@@ -151,7 +149,7 @@ int function GetTotalAvailableSpellPoints()
     int baseMagicka             = PlayerRef.GetBaseActorValue("Magicka")      as int
     int minMagickaRequired      = DailySpellList_MinSpellCastingMagicka.Value as int
     int pointsPerInterval       = DailySpellList_PointsEarnedValue.Value      as int
-    int intervalSize            = DailySpellList_PointsEarnedInterval         as int
+    int intervalSize            = DailySpellList_PointsEarnedInterval.Value   as int
     int amountOfMagickaOverBase = baseMagicka - minMagickaRequired
 
     if amountOfMagickaOverBase <= 0
@@ -328,7 +326,7 @@ function LoadAllPlayerSpellsAsUnprepared()
 endFunction
 
 function MeditateOnSpellList(bool castUsingSpell = false)
-    if ! PlayerHasAnySpellsWhichCostPoints()
+    if ! PlayerHasAnyUnpreparedSpells()
         if castUsingSpell
             Debug.MessageBox("You do not have any spells\nwhich can be meditated on")
         endIf
