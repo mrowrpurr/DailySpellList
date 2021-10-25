@@ -15,13 +15,14 @@ GlobalVariable property DailySpellList_PointsRequired_Expert auto
 GlobalVariable property DailySpellList_PointsRequired_Master auto
 GlobalVariable property DailySpellList_PointsEarnedValue auto
 GlobalVariable property DailySpellList_MinSpellCastingMagicka auto
+GlobalVariable property DailySpellList_CanCancelMeditation auto
+GlobalVariable property DailySpellList_CanBeginMeditation auto
 GlobalVariable property GameDaysPassed auto
 GlobalVariable property GameHour auto
 int property DailySpellList_PointsEarnedInterval = 10 autoReadonly
 Message property DailySpellList_BeginMeditation auto
 Message property DailySpellList_EndMeditation auto
 Message property DailySpellList_NotEnoughPoints auto
-Form property DailySpellList_MessageText_BaseForm auto
 Perk property AlterationNovice00 auto
 Perk property AlterationApprentice25 auto
 Perk property AlterationAdept50 auto
@@ -58,6 +59,7 @@ Form[] PreparedSpells_Adept
 Form[] PreparedSpells_Expert
 Form[] PreparedSpells_Master
 Form[] property UnrestrictedSpells auto
+Form property DailySpellList_MessageText_BaseForm auto
 
 bool HasPlayerMeditated
 bool PlayerSpellsLoaded
@@ -319,33 +321,36 @@ function LoadAllPlayerSpellsAsUnprepared()
 endFunction
 
 function MeditateOnSpellList()
+    string text
     int remainingHours = GetRemainingHoursBeforeCanMeditateAgain()
     if remainingHours > 0 && HasPlayerMeditated
-        Debug.MessageBox("You need to wait " + remainingHours + " hour(s) before you can meditate on your spells.")
-    else
-        if BeginMeditationPrompt()
-            IsCurrentlyMeditating = true
-            HasPlayerMeditated = true
-            if ! PlayerSpellsLoaded
-                PlayerSpellsLoaded = true
-            endIf
-            ShowSpellSelectionList()
+        DailySpellList_CanBeginMeditation.Value = 0
+        if remainingHours == 1
+            text = "You need to wait 1 hour until you can meditate\n\nWould you like to view your spell list?"
+        else
+            text = "You need to wait " + remainingHours + " hours until you can meditate\n\nWould you like to view your spell list?"
         endIf
-    endIf
-endFunction
-
-bool function BeginMeditationPrompt()
-    int totalAvailablePoints = GetTotalAvailableSpellPoints()
-    string text = ""
-    if totalAvailablePoints > 0
-        return DailySpellList_BeginMeditation.Show() == 0
     else
-        Debug.MessageBox("You do not have any available spell points (required to meditate)")
+        text = "Would you like to begin meditation\nor view your spell list?"
+        DailySpellList_CanBeginMeditation.Value = 1
     endIf
-endFunction
 
-bool function EndMeditationPrompt()
-    return DailySpellList_EndMeditation.Show() == 0
+    SetMessageText(text)
+
+    DailySpellList_CanCancelMeditation.Value = 1 ; Turn this off after performing a meditation action
+
+    int beginMeditation = 0
+    int viewSpellList = 1
+    int result = DailySpellList_BeginMeditation.Show()
+    if result == beginMeditation
+        IsCurrentlyMeditating = true
+        if ! PlayerSpellsLoaded
+            PlayerSpellsLoaded = true
+        endIf
+        ShowSpellSelectionList()
+    elseIf result == viewSpellList
+        ShowSpellSelectionList(readonly = true)
+    endIf
 endFunction
 
 string function GetSpellLevel(Spell theSpell)
@@ -366,6 +371,7 @@ endFunction
 Form[] function TryToPrepareSpellAndReturnNewArray(Spell theSpell, Form[] unpreparedSpellArray)
     if HasEnoughPointsAvailableToPrepareSpell(theSpell)
         PrepareSpell(theSpell)
+        DailySpellList_CanCancelMeditation.Value = 0
         return RemoveElement(unpreparedSpellArray, theSpell)
     else
         DailySpellList_NotEnoughPoints.Show()
@@ -456,7 +462,7 @@ int function GetPointsRequiredForSpell(Spell theSpell)
     endIf
 endFunction
 
-function ShowSpellSelectionList(string filter = "")
+function ShowSpellSelectionList(string filter = "", bool readonly = false)
     UIListMenu list = UIExtensions.GetMenu("UIListMenu") as UIListMenu
 
     Form[] AllDisplayedUnpreparedSpells
@@ -482,11 +488,20 @@ function ShowSpellSelectionList(string filter = "")
     int selection = list.GetResultInt()
 
     if selection == -1
-        if EndMeditationPrompt()
+        int yesEndMeditation = 0
+        int noDontEndMeditation = 1
+        int cancelMeditation = 2
+        int result = DailySpellList_EndMeditation.Show()
+        if result == yesEndMeditation
             IsCurrentlyMeditating = false
-            DailySpellList_LastMeditationHour.Value = GetTotalHoursPassed()
-        else
+            HasPlayerMeditated = true 
+            DailySpellList_LastMeditationHour.Value = GetTotalHoursPassed()   
+            return        
+        elseIf result == noDontEndMeditation
             ShowSpellSelectionList()
+            return
+        elseif result == cancelMeditation
+            return
         endIf
     else
         int currentIndex = 2 ; The two header lines in the list of prepared
@@ -497,6 +512,7 @@ function ShowSpellSelectionList(string filter = "")
             UnpreparedSpells_Novice = AddElement(UnpreparedSpells_Novice, theSpell)
             PreparedSpells_Novice = RemoveElement(PreparedSpells_Novice, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            DailySpellList_CanCancelMeditation.Value = 0
             ShowSpellSelectionList()
             return
         endIf
@@ -508,6 +524,7 @@ function ShowSpellSelectionList(string filter = "")
             UnpreparedSpells_Apprentice = AddElement(UnpreparedSpells_Apprentice, theSpell)
             PreparedSpells_Apprentice = RemoveElement(PreparedSpells_Apprentice, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            DailySpellList_CanCancelMeditation.Value = 0
             ShowSpellSelectionList()
             return
         endIf
@@ -519,6 +536,7 @@ function ShowSpellSelectionList(string filter = "")
             UnpreparedSpells_Adept = AddElement(UnpreparedSpells_Adept, theSpell)
             PreparedSpells_Adept = RemoveElement(PreparedSpells_Adept, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            DailySpellList_CanCancelMeditation.Value = 0
             ShowSpellSelectionList()
             return
         endIf
@@ -530,6 +548,7 @@ function ShowSpellSelectionList(string filter = "")
             UnpreparedSpells_Expert = AddElement(UnpreparedSpells_Expert, theSpell)
             PreparedSpells_Expert = RemoveElement(PreparedSpells_Expert, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            DailySpellList_CanCancelMeditation.Value = 0
             ShowSpellSelectionList()
             return
         endIf
@@ -541,6 +560,7 @@ function ShowSpellSelectionList(string filter = "")
             UnpreparedSpells_Master = AddElement(UnpreparedSpells_Master, theSpell)
             PreparedSpells_Master = RemoveElement(PreparedSpells_Master, theSpell)
             SpellPointsUsed -= GetPointsRequiredForSpell(theSpell)
+            DailySpellList_CanCancelMeditation.Value = 0
             ShowSpellSelectionList()
             return
         endIf
@@ -584,6 +604,10 @@ function ShowSpellSelectionList(string filter = "")
         ShowSpellSelectionList()
         return
     endIf
+endFunction
+
+function ViewSpellList()
+    Debug.MessageBox("TODO")
 endFunction
 
 function AddSpellsToList(UIListMenu list, Form[] spells, string level)
