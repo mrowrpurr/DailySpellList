@@ -61,7 +61,7 @@ event OnPageReset(string page)
     AddHeaderOption("Spell Point Magicka Requirements")
     oid_MinimumMagicka = AddSliderOption("Minimum Magicka required to cast spells", SpellListMod.DailySpellList_MinSpellCastingMagicka.Value)
     oid_SpellPointsPerMagickaIncrease = AddSliderOption("Spell Points obtained per Magicka increase", SpellListMod.DailySpellList_PointsEarnedValue.Value)
-    oid_MagickaIncreaseSize = AddSliderOption("Points of Magicka which count as an increase", SpellListMod.DailySpellList_PointsEarnedInterval.Value)
+    oid_MagickaIncreaseSize = AddSliderOption("Magicka points which count as an increase", SpellListMod.DailySpellList_PointsEarnedInterval.Value)
     AddEmptyOption()
 
     AddHeaderOption("Spells that can be cast without restriction")
