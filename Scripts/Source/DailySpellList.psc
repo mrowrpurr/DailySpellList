@@ -129,6 +129,19 @@ bool function DoesSpellCostPoints(Spell theSpell)
     return true
 endFunction
 
+bool function PlayerHasAnySpellsWhichCostPoints()
+    int spellCount = PlayerRef.GetSpellCount()
+    int i = 0
+    while i < spellCount
+        Spell theSpell = PlayerRef.GetNthSpell(i)
+        if DoesSpellCostPoints(theSpell)
+            return true
+        endIf
+        i += 1
+    endWhile
+    return false
+endFunction
+
 bool function IsSpellWithoutRestriction(Spell theSpell)
     return UnrestrictedSpells.Find(theSpell) > -1
 endFunction
@@ -313,7 +326,14 @@ function LoadAllPlayerSpellsAsUnprepared()
     endWhile
 endFunction
 
-function MeditateOnSpellList()
+function MeditateOnSpellList(bool castUsingSpell = false)
+    if ! PlayerHasAnySpellsWhichCostPoints()
+        if castUsingSpell
+            Debug.MessageBox("You do not have any spells\nwhich can be meditated on")
+        endIf
+        return
+    endIf
+
     string text
     int remainingHours = GetRemainingHoursBeforeCanMeditateAgain()
     if remainingHours > 0 && HasPlayerMeditated
