@@ -141,6 +141,14 @@ bool function PlayerHasAnyUnpreparedSpells()
            UnpreparedSpells_Master.Length     > 0
 endFunction
 
+bool function PlayerHasAnyPreparedSpells()
+    return PreparedSpells_Novice.Length     > 0 || \
+           PreparedSpells_Apprentice.Length > 0 || \
+           PreparedSpells_Adept.Length      > 0 || \
+           PreparedSpells_Expert.Length     > 0 || \
+           PreparedSpells_Master.Length     > 0
+endFunction
+
 bool function IsSpellWithoutRestriction(Spell theSpell)
     return UnrestrictedSpells.Find(theSpell) > -1
 endFunction
@@ -326,7 +334,7 @@ function LoadAllPlayerSpellsAsUnprepared()
 endFunction
 
 function MeditateOnSpellList(bool castUsingSpell = false)
-    if ! PlayerHasAnyUnpreparedSpells()
+    if ! PlayerHasAnyUnpreparedSpells() && ! PlayerHasAnyPreparedSpells()
         if castUsingSpell
             Debug.MessageBox("You do not have any spells\nwhich can be meditated on")
         endIf
