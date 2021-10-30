@@ -412,6 +412,23 @@ function MeditateOnSpellList(bool castUsingSpell = false)
     endIf
 endFunction
 
+bool WasInFirstPersonBeforeMeditation
+
+function EnterMeditationPose()
+    WasInFirstPersonBeforeMeditation = Game.GetCameraState() == 0
+    Game.ForceThirdPerson()
+    Debug.SendAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter")
+    Utility.Wait(2)
+endFunction
+
+function ExitMeditationPose()
+    Utility.Wait(0.5)
+    Debug.SendAnimationEvent(PlayerRef, "IdleChairExitStart")
+    if WasInFirstPersonBeforeMeditation
+        Game.ForceFirstPerson()
+    endIf
+endFunction
+
 string function GetSpellLevel(Spell theSpell)
     Perk spellPerk = theSpell.GetPerk()
     if spellPerk
