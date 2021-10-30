@@ -19,7 +19,6 @@ int property oid_SelectNoRestrictionSpells auto
 int property oid_SelectCustomRestrictionSpells auto
 Form[] property CurrentUnpreparedSpellList auto
 Form[] property CurrentUnmanagedSpellList auto
-Form[] property CustomRestrictedSpells auto
 int[] property UnrestrictedSpellOptionIDs auto
 int[] property CustomRestrictedSpellOptionIDs auto
 
@@ -210,7 +209,7 @@ endEvent
 
 event OnOptionMenuOpen(int optionId)
     if optionId == oid_SelectNoRestrictionSpells
-        CurrentUnpreparedSpellList = SpellListMod.GetAllUnpreparedSpells()
+        CurrentUnpreparedSpellList = SpellListMod.GetPlayerManagedSpells()
         SetMenuDialogOptions(GetFormNamesAsArray(CurrentUnpreparedSpellList))
     elseIf optionId == oid_SelectCustomRestrictionSpells
         CurrentUnmanagedSpellList = SpellListMod.GetPlayerUnmanagedSpells()
@@ -249,7 +248,7 @@ event OnOptionMenuAccept(int optionId, int index)
         ForcePageReset()
     elseIf optionId == oid_SelectCustomRestrictionSpells
         Form theSpell = CurrentUnmanagedSpellList[index]
-        CustomRestrictedSpells = SpellListMod.AddElement(CustomRestrictedSpells, theSpell)
+        SpellListMod.CustomRestrictedSpells = SpellListMod.AddElement(SpellListMod.CustomRestrictedSpells, theSpell)
         string levelFromPerk = SpellListMod.GetSpellPerkLevel((theSpell as Spell).GetPerk())
         if ! levelFromPerk
             levelFromPerk = "Novice"

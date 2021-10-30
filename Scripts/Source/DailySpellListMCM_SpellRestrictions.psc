@@ -31,8 +31,8 @@ function RightColumn(DailySpellListMCM mcm) global
     mcm.oid_SelectCustomRestrictionSpells = mcm.AddMenuOption("Select spells", "CHOOSE SPELL")
 
     int i = 0
-    while i < mcm.CustomRestrictedSpells.Length && i < (64 - 9) ; Right column has 64 items, minus the 9 used
-        int oid = mcm.AddTextOption("", mcm.CustomRestrictedSpells[i].GetName())
+    while i < mcm.SpellListMod.CustomRestrictedSpells.Length && i < (64 - 9) ; Right column has 64 items, minus the 9 used
+        int oid = mcm.AddTextOption("", mcm.SpellListMod.CustomRestrictedSpells[i].GetName())
         if mcm.CustomRestrictedSpellOptionIDs
             mcm.CustomRestrictedSpellOptionIDs = Utility.ResizeIntArray(mcm.CustomRestrictedSpellOptionIDs, mcm.CustomRestrictedSpellOptionIDs.Length + 1)
             mcm.CustomRestrictedSpellOptionIDs[mcm.CustomRestrictedSpellOptionIDs.Length - 1] = oid

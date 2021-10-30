@@ -59,6 +59,7 @@ Form[] PreparedSpells_Adept
 Form[] PreparedSpells_Expert
 Form[] PreparedSpells_Master
 Form[] property UnrestrictedSpells auto
+Form[] property CustomRestrictedSpells auto
 Form property DailySpellList_MessageText_BaseForm auto
 
 bool HasPlayerMeditated
@@ -144,42 +145,6 @@ bool function PlayerHasAnyPreparedSpells()
            PreparedSpells_Adept.Length      > 0 || \
            PreparedSpells_Expert.Length     > 0 || \
            PreparedSpells_Master.Length     > 0
-endFunction
-
-Form[] function GetPlayerUnmanagedSpells()
-    Form[] unmanagedSpells
-
-    int spellCount = PlayerRef.GetSpellCount()
-    int i = 0
-    while i < spellCount
-        Spell theSpell = PlayerRef.GetNthSpell(i)
-        if ! IsSpellTrackedAsPreparedOrUnprepared(theSpell)
-            if unmanagedSpells
-                unmanagedSpells = Utility.ResizeFormArray(unmanagedSpells, unmanagedSpells.Length + 1)
-                unmanagedSpells[unmanagedSpells.Length - 1] = theSpell
-            else
-                unmanagedSpells = new Form[1]
-                unmanagedSpells[0] = theSpell
-            endIf
-        endIf
-        i += 1
-    endWhile
-
-    return unmanagedSpells
-endFunction
-
-bool function IsSpellTrackedAsPreparedOrUnprepared(Spell theSpell)
-    return UnpreparedSpells_Novice.Find(theSpell)     > -1 || \
-           UnpreparedSpells_Apprentice.Find(theSpell) > -1 || \
-           UnpreparedSpells_Adept.Find(theSpell)      > -1 || \
-           UnpreparedSpells_Expert.Find(theSpell)     > -1 || \
-           UnpreparedSpells_Master.Find(theSpell)     > -1 || \
-           PreparedSpells_Novice.Find(theSpell)       > -1 || \
-           PreparedSpells_Apprentice.Find(theSpell)   > -1 || \
-           PreparedSpells_Adept.Find(theSpell)        > -1 || \
-           PreparedSpells_Expert.Find(theSpell)       > -1 || \
-           PreparedSpells_Master.Find(theSpell)       > -1 || \
-           UnrestrictedSpells.Find(theSpell)          > -1
 endFunction
 
 bool function IsSpellWithoutRestriction(Spell theSpell)
@@ -278,70 +243,104 @@ function AddUnlearnedSpell(Spell theSpell, bool force = false, string level = ""
     endIf
 endFunction
 
-Form[] function GetAllUnpreparedSpells()
+Form[] function GetPlayerManagedSpells()
     Form[] theSpells
 
     int i = 0
     while i < UnpreparedSpells_Novice.Length
-        if theSpells
-            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
-            theSpells[theSpells.Length - 1] = UnpreparedSpells_Novice[i]
-        else
-            theSpells = new Form[1]
-            theSpells[0] = UnpreparedSpells_Novice[i]
+        if CustomRestrictedSpells.Find(UnpreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, UnpreparedSpells_Novice[i])
         endIf
         i += 1
     endWhile
-
     i = 0
     while i < UnpreparedSpells_Apprentice.Length
-        if theSpells
-            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
-            theSpells[theSpells.Length - 1] = UnpreparedSpells_Apprentice[i]
-        else
-            theSpells = new Form[1]
-            theSpells[0] = UnpreparedSpells_Apprentice[i]
+        if CustomRestrictedSpells.Find(UnpreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, UnpreparedSpells_Novice[i])
         endIf
         i += 1
     endWhile
-
     i = 0
     while i < UnpreparedSpells_Adept.Length
-        if theSpells
-            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
-            theSpells[theSpells.Length - 1] = UnpreparedSpells_Adept[i]
-        else
-            theSpells = new Form[1]
-            theSpells[0] = UnpreparedSpells_Adept[i]
+        if CustomRestrictedSpells.Find(UnpreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, UnpreparedSpells_Novice[i])
         endIf
         i += 1
     endWhile
-
     i = 0
     while i < UnpreparedSpells_Expert.Length
-        if theSpells
-            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
-            theSpells[theSpells.Length - 1] = UnpreparedSpells_Expert[i]
-        else
-            theSpells = new Form[1]
-            theSpells[0] = UnpreparedSpells_Expert[i]
+        if CustomRestrictedSpells.Find(UnpreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, UnpreparedSpells_Novice[i])
         endIf
         i += 1
     endWhile
-
     i = 0
     while i < UnpreparedSpells_Master.Length
-        if theSpells
-            theSpells = Utility.ResizeFormArray(theSpells, theSpells.Length + 1)
-            theSpells[theSpells.Length - 1] = UnpreparedSpells_Master[i]
-        else
-            theSpells = new Form[1]
-            theSpells[0] = UnpreparedSpells_Master[i]
+        if CustomRestrictedSpells.Find(UnpreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, UnpreparedSpells_Novice[i])
+        endIf
+        i += 1
+    endWhile
+    i = 0
+    while i < PreparedSpells_Novice.Length
+        if CustomRestrictedSpells.Find(PreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, PreparedSpells_Novice[i])
+        endIf
+        i += 1
+    endWhile
+    i = 0
+    while i < PreparedSpells_Apprentice.Length
+        if CustomRestrictedSpells.Find(PreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, PreparedSpells_Novice[i])
+        endIf
+        i += 1
+    endWhile
+    i = 0
+    while i < PreparedSpells_Adept.Length
+        if CustomRestrictedSpells.Find(PreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, PreparedSpells_Novice[i])
+        endIf
+        i += 1
+    endWhile
+    i = 0
+    while i < PreparedSpells_Expert.Length
+        if CustomRestrictedSpells.Find(PreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, PreparedSpells_Novice[i])
+        endIf
+        i += 1
+    endWhile
+    i = 0
+    while i < PreparedSpells_Master.Length
+        if CustomRestrictedSpells.Find(PreparedSpells_Novice[i]) == -1
+            theSpells = AddElement(theSpells, PreparedSpells_Novice[i])
         endIf
         i += 1
     endWhile
     
     return theSpells
+endFunction
+
+Form[] function GetPlayerUnmanagedSpells()
+    Form[] managedSpells = GetPlayerManagedSpells()
+    Form[] unmanagedSpells
+
+    int spellCount = PlayerRef.GetSpellCount()
+    int i = 0
+    while i < spellCount
+        Spell theSpell = PlayerRef.GetNthSpell(i)
+        if managedSpells.Find(theSpell) == -1
+            if unmanagedSpells
+                unmanagedSpells = Utility.ResizeFormArray(unmanagedSpells, unmanagedSpells.Length + 1)
+                unmanagedSpells[unmanagedSpells.Length - 1] = theSpell
+            else
+                unmanagedSpells = new Form[1]
+                unmanagedSpells[0] = theSpell
+            endIf
+        endIf
+        i += 1
+    endWhile
+
+    return unmanagedSpells
 endFunction
 
 function LoadAllPlayerSpellsAsUnprepared()
@@ -406,6 +405,7 @@ function MeditateOnSpellList(bool castUsingSpell = false)
         if ! PlayerSpellsLoaded
             PlayerSpellsLoaded = true
         endIf
+        EnterMeditationPose()
         ShowSpellSelectionList()
     elseIf result == viewSpellList
         ShowSpellSelectionList(readonly = true)
@@ -576,11 +576,14 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
             IsCurrentlyMeditating = false
             HasPlayerMeditated = true 
             DailySpellList_LastMeditationHour.Value = GetTotalHoursPassed()   
-            return        
+            ExitMeditationPose()
+            return
         elseIf result == noDontEndMeditation
             ShowSpellSelectionList(readonly = readonly)
             return
         elseif result == cancelMeditation
+            IsCurrentlyMeditating = false
+            ExitMeditationPose()
             return
         endIf
     elseIf selection == 0 ; Header
