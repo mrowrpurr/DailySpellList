@@ -4,6 +4,7 @@ DailySpellList property SpellListMod auto
 
 int  CurrentPlayerMagicka
 bool JustFinishedSleeping = false
+bool CheckForNewSpellsOnUpdate
 
 event OnInit()
     SpellListMod = GetOwningQuest() as DailySpellList
@@ -12,7 +13,15 @@ event OnInit()
 endEvent
 
 event OnPlayerLoadGame()
+    SpellListMod.OnPlayerLoadGame()
     ListenForEvents()
+endEvent
+
+event OnUpdate()
+    if CheckForNewSpellsOnUpdate
+        CheckForNewSpellsOnUpdate = false
+        SpellListMod.CheckForNewPlayerSpells()
+    endIf
 endEvent
 
 function ListenForEvents()
@@ -93,6 +102,8 @@ event OnMenuClose(string menuName)
         endIf
     elseIf menuName == "Dialogue Menu"
         SpellListMod.CheckForNewPlayerSpells()
+        CheckForNewSpellsOnUpdate = true
+        RegisterForSingleUpdate(3.0)
     elseIf menuName == "Console"
         SpellListMod.CheckForNewPlayerSpells()
     endIf
