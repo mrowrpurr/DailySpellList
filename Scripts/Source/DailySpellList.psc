@@ -1,5 +1,6 @@
 scriptName DailySpellList extends Quest
 
+string property CurrentlyInstalledVersion auto
 Actor property PlayerRef auto
 DailySpellList_Player property DailySpellList_PlayerReferenceAlias auto
 GlobalVariable property DailySpellList_MinHours auto
@@ -68,9 +69,18 @@ int  SpellPointsUsed
 bool IsCurrentlyMeditating
 EquipSlot VoiceEquipSlot
 
+string function GetCurrentVersion() global
+    return "1.1"
+endFunction
+
 event OnInit()
+    CurrentlyInstalledVersion = GetCurrentVersion()
     VoiceEquipSlot = Game.GetForm(0x25bee) as EquipSlot
     LoadAllPlayerSpellsAsUnprepared()
+endEvent
+
+event OnPlayerLoadGame()
+    CurrentlyInstalledVersion = GetCurrentVersion()
 endEvent
 
 bool property CanPrepareNewSpellList
