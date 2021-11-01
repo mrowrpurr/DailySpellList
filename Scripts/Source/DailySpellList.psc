@@ -53,11 +53,11 @@ Form[] property UnpreparedSpells_Apprentice auto
 Form[] property UnpreparedSpells_Adept auto
 Form[] property UnpreparedSpells_Expert auto
 Form[] property UnpreparedSpells_Master auto
-Form[] PreparedSpells_Novice
-Form[] PreparedSpells_Apprentice
-Form[] PreparedSpells_Adept
-Form[] PreparedSpells_Expert
-Form[] PreparedSpells_Master
+Form[] property PreparedSpells_Novice auto
+Form[] property PreparedSpells_Apprentice auto
+Form[] property PreparedSpells_Adept auto
+Form[] property PreparedSpells_Expert auto
+Form[] property PreparedSpells_Master auto
 Form[] property UnrestrictedSpells auto
 Form[] property CustomRestrictedSpells auto
 Form property DailySpellList_MessageText_BaseForm auto
@@ -328,7 +328,7 @@ Form[] function GetPlayerUnmanagedSpells()
     int i = 0
     while i < spellCount
         Spell theSpell = PlayerRef.GetNthSpell(i)
-        if managedSpells.Find(theSpell) == -1
+        if managedSpells.Find(theSpell) == -1 && UnrestrictedSpells.Find(theSpell) == -1
             if unmanagedSpells
                 unmanagedSpells = Utility.ResizeFormArray(unmanagedSpells, unmanagedSpells.Length + 1)
                 unmanagedSpells[unmanagedSpells.Length - 1] = theSpell
@@ -341,6 +341,19 @@ Form[] function GetPlayerUnmanagedSpells()
     endWhile
 
     return unmanagedSpells
+endFunction
+
+function CheckForNewPlayerSpells()
+    Form[] unmanagedSpells = GetPlayerUnmanagedSpells()
+    int i = 0
+    while i < unmanagedSpells.Length
+        Spell theSpell  = unmanagedSpells[i] as Spell
+        Perk  spellPerk = theSpell.GetPerk()
+        if spellPerk
+            AddUnlearnedSpell(theSpell)
+        endIf
+        i += 1
+    endWhile
 endFunction
 
 function LoadAllPlayerSpellsAsUnprepared()

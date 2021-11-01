@@ -20,6 +20,8 @@ function ListenForEvents()
     ListenForWait()
     ListenForNewSpellLearned()
     ListenForLevelUp()
+    ListenForDialogue()
+    ListenForConsole()
 endFunction
 
 function ListenForSleep()
@@ -32,6 +34,14 @@ function ListenForWait()
     if SpellListMod.DailySpellList_WaitPrompt.Value > 0
         RegisterForMenu("Sleep/Wait Menu")
     endIf
+endFunction
+
+function ListenForDialogue()
+    RegisterForMenu("Dialogue Menu")
+endFunction
+
+function ListenForConsole()
+    RegisterForMenu("Console")
 endFunction
 
 function StopListeningForWait()
@@ -68,6 +78,7 @@ endEvent
 
 event OnMenuClose(string menuName)
     if menuName == "Sleep/Wait Menu" && SpellListMod.DailySpellList_WaitPrompt.Value > 0 && SpellListMod.CanPrepareNewSpellList
+        SpellListMod.CheckForNewPlayerSpells()
         if ! JustFinishedSleeping
             SpellListMod.MeditateOnSpellList()
         endIf
@@ -80,6 +91,10 @@ event OnMenuClose(string menuName)
             CurrentPlayerMagicka = newMagicka
             SpellListMod.DisplayLevelUpInfo(totalMagickaAdded)
         endIf
+    elseIf menuName == "Dialogue Menu"
+        SpellListMod.CheckForNewPlayerSpells()
+    elseIf menuName == "Console"
+        SpellListMod.CheckForNewPlayerSpells()
     endIf
 endEvent
 

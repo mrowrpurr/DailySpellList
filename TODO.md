@@ -1,0 +1,1 @@
+- Prevent meditation while in combat
