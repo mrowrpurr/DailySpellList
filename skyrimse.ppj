@@ -6,11 +6,12 @@
     Output="Scripts" 
     Optimize="false" 
     Release="false" 
-    Zip="false"
-    Package="false"
+    Zip="true"
+    Package="true"
     Final="false">
     <Variables>
         <Variable Name="ModName" Value="DailySpellList" />
+        <Variable Name="ModVersion" Value="v1.1" />
         <Variable Name="ModsFolder" Value="C:\Users\mrowr\Dropbox\Skyrim\Mods" />
         <Variable Name="ImportsFolder" Value="C:\Users\mrowr\Dropbox\Skyrim\Imports" />
     </Variables>
@@ -32,7 +33,7 @@
         </Package>
     </Packages>
     <ZipFiles Output="Build">
-        <ZipFile Name="@ModName" RootDir="." Compression="deflate">
+        <ZipFile Name="@ModName-@ModVersion" RootDir="." Compression="deflate">
             <Include>@ModName.esp</Include>
             <Include NoRecurse="true">*.bsa</Include>
         </ZipFile>
