@@ -440,46 +440,18 @@ endFunction
 bool WasInFirstPersonBeforeMeditation
 
 function StartMeditationAnimation()
-    ; Game.ForceFirstPerson()
-	; Game.DisablePlayerControls(true, true, true, false, true, true, true, false, 0)
-
-    CameraMan = PlayerRef.PlaceAtMe(DailySpellList_CameraMan) as Actor ; abInitiallyDisabled
-
     ; Place Camera Man in front of the player
-    float direction
-    if PlayerRef.GetAngleZ() > 180
-        direction = PlayerRef.GetAngleZ() - 180
-    else
-        direction = PlayerRef.GetAngleZ() + 180
-    endIf
-
-    ; float distanceFromTarget = 256
-    float distanceFromTarget = 400
+    CameraMan = PlayerRef.PlaceAtMe(DailySpellList_CameraMan) as Actor ; abInitiallyDisabled
+    float distanceFromTarget = 800
     float xOffset = distanceFromTarget * Math.cos(PlayerRef.GetAngleZ());
     float yOffset = distanceFromTarget * Math.sin(PlayerRef.GetAngleZ())
-
-    ; CameraMan.SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), PlayerRef.GetAngleZ())
-    
-    ; CameraMan.SetAngle()
-
     CameraMan.MoveTo(PlayerRef, afXOffset = yOffset, afYOffset = xOffset)
+    ;;;;;
 
-    ; CameraMan.EnableAI(false)
-    ; CameraMan.SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), CameraMan.GetHeadingAngle(PlayerRef))
-    ; CameraMan.SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), PlayerRef.GetAngleZ())
-
-    ; CameraMan.SetPlayerControls(true)
-    ; Game.SetPlayerAIDriven(false)
-
-    ; ; Game.SetPlayerAIDriven(true)
-    ; ; Game.SetCameraTarget(CameraMan)
-    ; Game.ForceFirstPerson()
-	; Game.ForceThirdPerson()
-
-    ; Game.ForceFirstPerson()
-
-    ; WasInFirstPersonBeforeMeditation = Game.GetCameraState() == 0
-    ; Game.ForceThirdPerson()
+    Game.DisablePlayerControls()
+    Game.SetCameraTarget(CameraMan)
+    CameraMan.SetPlayerControls(True)
+    CameraMan.EnableAI(False)
 
     Debug.SendAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter")
     Utility.Wait(2)
