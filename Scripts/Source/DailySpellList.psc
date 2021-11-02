@@ -2,6 +2,8 @@ scriptName DailySpellList extends Quest
 
 string property CurrentlyInstalledVersion auto
 Actor property PlayerRef auto
+Actor property CameraMan auto
+ActorBase property DailySpellList_CameraMan auto
 DailySpellList_Player property DailySpellList_PlayerReferenceAlias auto
 GlobalVariable property DailySpellList_MinHours auto
 GlobalVariable property DailySpellList_SleepPrompt auto
@@ -428,7 +430,7 @@ function MeditateOnSpellList(bool castUsingSpell = false)
         if ! PlayerSpellsLoaded
             PlayerSpellsLoaded = true
         endIf
-        EnterMeditationPose()
+        StartMeditationAnimation()
         ShowSpellSelectionList()
     elseIf result == viewSpellList
         ShowSpellSelectionList(readonly = true)
@@ -437,19 +439,65 @@ endFunction
 
 bool WasInFirstPersonBeforeMeditation
 
-function EnterMeditationPose()
-    WasInFirstPersonBeforeMeditation = Game.GetCameraState() == 0
-    Game.ForceThirdPerson()
+function StartMeditationAnimation()
+    ; Game.ForceFirstPerson()
+	; Game.DisablePlayerControls(true, true, true, false, true, true, true, false, 0)
+
+    CameraMan = PlayerRef.PlaceAtMe(DailySpellList_CameraMan) as Actor ; abInitiallyDisabled
+
+    ; Place Camera Man in front of the player
+    float direction
+    if PlayerRef.GetAngleZ() > 180
+        direction = PlayerRef.GetAngleZ() - 180
+    else
+        direction = PlayerRef.GetAngleZ() + 180
+    endIf
+
+    ; float distanceFromTarget = 256
+    float distanceFromTarget = 400
+    float xOffset = distanceFromTarget * Math.cos(PlayerRef.GetAngleZ());
+    float yOffset = distanceFromTarget * Math.sin(PlayerRef.GetAngleZ())
+
+    ; CameraMan.SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), PlayerRef.GetAngleZ())
+    
+    ; CameraMan.SetAngle()
+
+    CameraMan.MoveTo(PlayerRef, afXOffset = yOffset, afYOffset = xOffset)
+
+    ; CameraMan.EnableAI(false)
+    ; CameraMan.SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), CameraMan.GetHeadingAngle(PlayerRef))
+    ; CameraMan.SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), PlayerRef.GetAngleZ())
+
+    ; CameraMan.SetPlayerControls(true)
+    ; Game.SetPlayerAIDriven(false)
+
+    ; ; Game.SetPlayerAIDriven(true)
+    ; ; Game.SetCameraTarget(CameraMan)
+    ; Game.ForceFirstPerson()
+	; Game.ForceThirdPerson()
+
+    ; Game.ForceFirstPerson()
+
+    ; WasInFirstPersonBeforeMeditation = Game.GetCameraState() == 0
+    ; Game.ForceThirdPerson()
+
     Debug.SendAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter")
     Utility.Wait(2)
 endFunction
 
-function ExitMeditationPose()
+function FinishMeditationAnimation()
     Utility.Wait(0.5)
     Debug.SendAnimationEvent(PlayerRef, "IdleChairExitStart")
-    if WasInFirstPersonBeforeMeditation
-        Game.ForceFirstPerson()
-    endIf
+
+    ; if WasInFirstPersonBeforeMeditation
+    ;     Game.ForceFirstPerson()
+    ; endIf
+
+    ; CameraMan.SetPlayerControls(false)
+    ; CameraMan.EnableAI(true)
+    ; Game.EnablePlayerControls()
+    ; Game.SetCameraTarget(PlayerRef)
+    ; CameraMan.Delete()
 endFunction
 
 string function GetSpellLevel(Spell theSpell)
@@ -616,14 +664,14 @@ function ShowSpellSelectionList(string filter = "", bool readonly = false)
             IsCurrentlyMeditating = false
             HasPlayerMeditated = true 
             DailySpellList_LastMeditationHour.Value = GetTotalHoursPassed()   
-            ExitMeditationPose()
+            FinishMeditationAnimation()
             return
         elseIf result == noDontEndMeditation
             ShowSpellSelectionList(readonly = readonly)
             return
         elseif result == cancelMeditation
             IsCurrentlyMeditating = false
-            ExitMeditationPose()
+            FinishMeditationAnimation()
             return
         endIf
     elseIf selection == 0 ; Header
