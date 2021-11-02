@@ -442,7 +442,7 @@ bool WasInFirstPersonBeforeMeditation
 function StartMeditationAnimation()
     ; Place Camera Man in front of the player
     CameraMan = PlayerRef.PlaceAtMe(DailySpellList_CameraMan) as Actor ; abInitiallyDisabled
-    float distanceFromTarget = 800
+    float distanceFromTarget = 400
     float xOffset = distanceFromTarget * Math.cos(PlayerRef.GetAngleZ());
     float yOffset = distanceFromTarget * Math.sin(PlayerRef.GetAngleZ())
     CameraMan.MoveTo(PlayerRef, afXOffset = yOffset, afYOffset = xOffset)
@@ -452,6 +452,14 @@ function StartMeditationAnimation()
     Game.SetCameraTarget(CameraMan)
     CameraMan.SetPlayerControls(True)
     CameraMan.EnableAI(False)
+
+    float direction
+    if PlayerRef.GetAngleZ() > 180
+        direction = PlayerRef.GetAngleZ() - 180
+    else
+        direction = PlayerRef.GetAngleZ() + 180
+    endIf
+    CameraMan.SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), direction)
 
     Debug.SendAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter")
     Utility.Wait(2)
