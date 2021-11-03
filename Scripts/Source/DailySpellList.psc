@@ -72,7 +72,7 @@ bool IsCurrentlyMeditating
 EquipSlot VoiceEquipSlot
 
 string function GetCurrentVersion() global
-    return "1.2"
+    return "1.3"
 endFunction
 
 event OnInit()

@@ -11,7 +11,7 @@
     Final="false">
     <Variables>
         <Variable Name="ModName" Value="DailySpellList" />
-        <Variable Name="ModVersion" Value="v1.2" />
+        <Variable Name="ModVersion" Value="v1.3" />
         <Variable Name="ModsFolder" Value="C:\Users\mrowr\Dropbox\Skyrim\Mods" />
         <Variable Name="ImportsFolder" Value="C:\Users\mrowr\Dropbox\Skyrim\Imports" />
     </Variables>
