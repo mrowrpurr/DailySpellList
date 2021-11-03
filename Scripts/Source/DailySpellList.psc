@@ -440,18 +440,25 @@ endFunction
 bool WasInFirstPersonBeforeMeditation
 
 function StartMeditationAnimation()
+    WasInFirstPersonBeforeMeditation = Game.GetCameraState() == 0
+
     ; Place Camera Man in front of the player
     CameraMan = PlayerRef.PlaceAtMe(DailySpellList_CameraMan) as Actor ; abInitiallyDisabled
-    float distanceFromTarget = 400
+
+    ; CameraMan.SetScale(0.5) ; CONFIGURABLE
+
+    float distanceFromTarget = 100 ; CONFIGURABLE
+
     float xOffset = distanceFromTarget * Math.cos(PlayerRef.GetAngleZ());
     float yOffset = distanceFromTarget * Math.sin(PlayerRef.GetAngleZ())
     CameraMan.MoveTo(PlayerRef, afXOffset = yOffset, afYOffset = xOffset)
-    ;;;;;
 
     Game.DisablePlayerControls()
+    Game.ForceFirstPerson()
+    Game.ForceThirdPerson()
     Game.SetCameraTarget(CameraMan)
-    CameraMan.SetPlayerControls(True)
-    CameraMan.EnableAI(False)
+    CameraMan.SetPlayerControls(true)
+    CameraMan.EnableAI(false)
 
     float direction
     if PlayerRef.GetAngleZ() > 180
@@ -460,7 +467,7 @@ function StartMeditationAnimation()
         direction = PlayerRef.GetAngleZ() + 180
     endIf
     CameraMan.SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), direction)
-
+    
     Debug.SendAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter")
     Utility.Wait(2)
 endFunction
@@ -469,15 +476,16 @@ function FinishMeditationAnimation()
     Utility.Wait(0.5)
     Debug.SendAnimationEvent(PlayerRef, "IdleChairExitStart")
 
-    ; if WasInFirstPersonBeforeMeditation
-    ;     Game.ForceFirstPerson()
-    ; endIf
+    Utility.Wait(2.0)
 
-    ; CameraMan.SetPlayerControls(false)
-    ; CameraMan.EnableAI(true)
-    ; Game.EnablePlayerControls()
-    ; Game.SetCameraTarget(PlayerRef)
-    ; CameraMan.Delete()
+    if WasInFirstPersonBeforeMeditation
+        Game.ForceFirstPerson()
+    endIf
+
+    Game.EnablePlayerControls()
+    Game.SetCameraTarget(PlayerRef)
+    CameraMan.SetPlayerControls(false)
+    CameraMan.Delete()
 endFunction
 
 string function GetSpellLevel(Spell theSpell)
