@@ -453,13 +453,6 @@ function StartMeditationAnimation()
     float yOffset = distanceFromTarget * Math.sin(PlayerRef.GetAngleZ())
     CameraMan.MoveTo(PlayerRef, afXOffset = yOffset, afYOffset = xOffset)
 
-    Game.DisablePlayerControls()
-    Game.ForceFirstPerson()
-    Game.ForceThirdPerson()
-    Game.SetCameraTarget(CameraMan)
-    CameraMan.SetPlayerControls(true)
-    CameraMan.EnableAI(false)
-
     float direction
     if PlayerRef.GetAngleZ() > 180
         direction = PlayerRef.GetAngleZ() - 180
@@ -467,6 +460,13 @@ function StartMeditationAnimation()
         direction = PlayerRef.GetAngleZ() + 180
     endIf
     CameraMan.SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), direction)
+
+    Game.DisablePlayerControls()
+    Game.ForceFirstPerson()
+    Game.ForceThirdPerson()
+    Game.SetCameraTarget(CameraMan)
+    CameraMan.SetPlayerControls(true)
+    CameraMan.EnableAI(false)
     
     Debug.SendAnimationEvent(PlayerRef, "IdleGreybeardMeditateEnter")
     Utility.Wait(2)
@@ -478,14 +478,14 @@ function FinishMeditationAnimation()
 
     Utility.Wait(2.0)
 
-    if WasInFirstPersonBeforeMeditation
-        Game.ForceFirstPerson()
-    endIf
-
     Game.EnablePlayerControls()
     Game.SetCameraTarget(PlayerRef)
     CameraMan.SetPlayerControls(false)
     CameraMan.Delete()
+
+    if WasInFirstPersonBeforeMeditation
+        Game.ForceFirstPerson()
+    endIf
 endFunction
 
 string function GetSpellLevel(Spell theSpell)

@@ -17,7 +17,7 @@
     </Variables>
     <Imports>
         <Import>@ModsFolder\SKSE64\Scripts\Source</Import>
-        <Import>@ModsFolder\PapyrusExtender\source\scripts</Import>
+        <Import>@ImportsFolder\PapyrusExtender\scripts\source</Import>
         <Import>@ImportsFolder\UIExtensions\scripts\source</Import>
         <Import>@ImportsFolder\SkyUI_SDK\Scripts\Source</Import>
         <Import>C:\Steam\steamapps\common\Skyrim Special Edition\Data\Scripts\Source</Import>
