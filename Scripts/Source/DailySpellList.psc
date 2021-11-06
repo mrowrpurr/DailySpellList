@@ -440,6 +440,11 @@ endFunction
 bool WasInFirstPersonBeforeMeditation
 
 function StartMeditationAnimation()
+    if PlayerRef.IsWeaponDrawn()
+        PlayerRef.SheatheWeapon()
+        Utility.WaitMenuMode(2.5)
+    endIf
+
     WasInFirstPersonBeforeMeditation = Game.GetCameraState() == 0
 
     ; Place Camera Man in front of the player
